@@ -1,1 +1,11 @@
+# generated RAG stores
+stores/
+
+# local env / junk
 ragenv/
+.DS_Store
+__pycache__/
+*.pyc
+
+# optional outputs
+output.txt
