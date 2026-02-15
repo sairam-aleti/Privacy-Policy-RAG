@@ -22,17 +22,12 @@ OLLAMA_EMBED_URL = "http://localhost:11434/api/embeddings"
 OLLAMA_CHAT_URL = "http://localhost:11434/api/chat"
 
 EMBED_MODEL = "nomic-embed-text"
-
-# CHANGED: smaller chat model to avoid RAM error seen with llama2
-CHAT_MODEL = "llama3.2:3b"
+CHAT_MODEL = "llama3.2:3b"  # smaller model (llama2 failed due to RAM)
 
 
 def ollama_embed(texts: List[str], model: str = EMBED_MODEL, timeout: int = 120) -> List[List[float]]:
-    """
-    Calls Ollama embeddings endpoint. One request per text (simple + reliable).
-    """
     embeddings = []
-    for idx, text in enumerate(texts, start=1):
+    for text in texts:
         resp = requests.post(
             OLLAMA_EMBED_URL,
             json={"model": model, "prompt": text},
@@ -44,25 +39,23 @@ def ollama_embed(texts: List[str], model: str = EMBED_MODEL, timeout: int = 120)
 
 
 def ollama_chat(contexts_labeled: List[str], question: str, model: str = CHAT_MODEL, timeout: int = 300) -> str:
-    """
-    Calls Ollama chat endpoint with a strict "cite-your-evidence" instruction.
-    contexts_labeled: list like ["[app#C12] chunk...", "[app#C57] chunk..."]
-    """
     context = "\n\n".join(contexts_labeled)
 
     system_msg = (
         "You are a strict privacy-policy auditor.\n"
         "Rules:\n"
         "1) Use ONLY the provided Context. Do NOT use outside knowledge.\n"
-        "2) Every factual claim MUST include one or more citations to chunk IDs "
-        "exactly as they appear in the Context (e.g., [aarogya_setu#C12]).\n"
-        "3) If the Context does not contain enough evidence, say 'Insufficient evidence in provided context.'\n"
-        "4) Do NOT claim 'X not found in policy' unless you can justify it from the Context.\n"
-        "5) Prefer quoting exact phrases from the Context when possible.\n"
+        "2) Every bullet/factual claim MUST end with one or more citations to chunk IDs "
+        "exactly as they appear in the Context (e.g., [paytm#C11]).\n"
+        "3) If the Context does not contain enough evidence for a claim, say "
+        "'Insufficient evidence in provided context.'\n"
+        "4) Do NOT claim 'X not found in policy'. Only speak about what is present in Context.\n"
+        "5) Do NOT invent citation IDs.\n"
     )
 
     user_msg = (
-        "Given the following Context, answer the Question.\n\n"
+        "Answer the Question using only the Context.\n"
+        "Return 2-6 bullet points. Each bullet must end with citations.\n\n"
         f"Context:\n{context}\n\n"
         f"Question:\n{question}\n"
     )
@@ -89,8 +82,6 @@ def ollama_chat(contexts_labeled: List[str], question: str, model: str = CHAT_MO
             chunk = json.loads(line.decode("utf-8"))
         except Exception:
             continue
-
-        # Ollama streaming responses usually include {"message":{"content":"..."}, ...}
         if "message" in chunk and isinstance(chunk["message"], dict) and "content" in chunk["message"]:
             full_response += chunk["message"]["content"]
         elif "content" in chunk:
@@ -100,26 +91,142 @@ def ollama_chat(contexts_labeled: List[str], question: str, model: str = CHAT_MO
 
 
 # ----------------------------
-# App name normalization (for matching findings with apps)
+# Term detection (deterministic, for now)
+# Later: replace with structured findings -> data_type
+# ----------------------------
+
+PRIVACY_TERMS = {
+    "location": ["location", "gps", "geolocation", "precise location", "lat", "lon", "latitude", "longitude"],
+    "imei": ["imei"],
+    "aadhaar": ["aadhaar", "aadhar"],
+    "advertising_id": ["advertising id", "ad id", "aaid", "google advertising id"],
+    "android_id": ["android id"],
+    "device_id": ["device id", "device identifier", "unique identifier", "hardware id"],
+    "mac_address": ["mac address", "mac"],
+    "ip_address": ["ip address", "ip"],
+    "contacts": ["contacts", "address book"],
+    "sms": ["sms", "text messages"],
+    "camera": ["camera"],
+    "microphone": ["microphone", "mic"],
+    "email": ["email", "email id", "e-mail"],
+    "phone_number": ["phone number", "mobile number", "phone"],
+    "name": ["name"],
+    "age": ["age", "date of birth", "dob"],
+    "sex": ["sex", "gender"],
+    "profession": ["profession", "occupation"],
+    "payment": ["payment", "card", "credit card", "debit card", "upi", "bank", "account number"],
+    "health": ["health", "medical", "diagnosis", "treatment"],
+    "cookies": ["cookie", "cookies"],
+}
+
+
+MENTION_TRIGGERS = [
+    "mention", "mentions", "mentioned",
+    "contain", "contains", "containing",
+    "explicit", "explicitly",
+    "state", "states", "stated",
+    "refer", "refers", "reference", "references",
+    "list", "lists", "listed",
+]
+
+
+def normalize_question(q: str) -> str:
+    # helps with smart quotes etc.
+    return (
+        q.replace("“", '"')
+         .replace("”", '"')
+         .replace("’", "'")
+         .replace("‘", "'")
+         .strip()
+    )
+
+
+def is_mention_query(question: str) -> bool:
+    q = question.lower()
+    return any(t in q for t in MENTION_TRIGGERS)
+
+
+def detect_terms(question: str) -> List[str]:
+    q = question.lower()
+    found = []
+    for canon, syns in PRIVACY_TERMS.items():
+        for s in syns:
+            if s in q:
+                found.append(canon)
+                break
+    return found
+
+
+def synonyms_for(terms: List[str]) -> List[str]:
+    syns: List[str] = []
+    for t in terms:
+        syns.extend(PRIVACY_TERMS.get(t, []))
+    # prefer longer first (e.g., "precise location" before "location")
+    syns = sorted(set(syns), key=len, reverse=True)
+    return syns
+
+
+def build_matchers(syns: List[str]):
+    """
+    Returns a list of (type, pattern_or_string).
+    - For very short syns like 'ip' or 'mac', use word-boundary regex.
+    - For longer syns, use case-insensitive substring.
+    """
+    matchers = []
+    for s in syns:
+        s = s.strip().lower()
+        if not s:
+            continue
+        if len(s) <= 3 and " " not in s:
+            # word boundary match for short tokens
+            matchers.append(("regex", re.compile(rf"\b{re.escape(s)}\b", re.IGNORECASE)))
+        else:
+            matchers.append(("substr", s))
+    return matchers
+
+
+def chunk_contains_any(chunk: str, matchers) -> bool:
+    c = chunk.lower()
+    for kind, pat in matchers:
+        if kind == "substr":
+            if pat in c:
+                return True
+        else:
+            if pat.search(chunk):
+                return True
+    return False
+
+
+def extract_matching_sentences(chunk: str, matchers) -> List[str]:
+    """
+    Best-effort sentence extraction: split chunk into sentence-ish units
+    and return those that match.
+    """
+    # split on common boundaries; policies are messy, so keep it simple
+    parts = re.split(r"(?<=[\.\?\!])\s+|\n+", chunk)
+    hits = []
+    for p in parts:
+        p = p.strip()
+        if not p:
+            continue
+        if chunk_contains_any(p, matchers):
+            hits.append(p)
+    # If nothing matched by sentence splitting, but the chunk matches,
+    # return the whole chunk (still grounded).
+    if not hits and chunk_contains_any(chunk, matchers):
+        hits = [chunk.strip()]
+    return hits
+
+
+# ----------------------------
+# App name normalization
 # ----------------------------
 
 def app_key(name: str) -> str:
-    """
-    Canonical app identifier for matching when names vary.
-    Examples:
-      "Aarogya Setu" -> "aarogyasetu"
-      "AarogyaSetu"  -> "aarogyasetu"
-    """
     return re.sub(r"[^a-z0-9]+", "", name.strip().lower())
 
 
 def slugify(name: str) -> str:
-    """
-    Safe folder name.
-    Examples:
-      "Aarogya Setu" -> "aarogya_setu"
-      "CoinDCX Web3" -> "coindcx_web3"
-    """
     s = name.strip().lower()
     s = re.sub(r"[^a-z0-9]+", "_", s)
     s = re.sub(r"_+", "_", s).strip("_")
@@ -139,10 +246,6 @@ def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
 
 
 def extract_text_from_website(url: str, timeout: int = 30) -> Tuple[str, str]:
-    """
-    Returns (text, source_type) where source_type is 'html' or 'pdf' or 'unknown'.
-    Detects PDF via URL suffix OR response content-type.
-    """
     try:
         resp = requests.get(url, timeout=timeout, headers={"User-Agent": "Mozilla/5.0"})
         resp.raise_for_status()
@@ -151,12 +254,10 @@ def extract_text_from_website(url: str, timeout: int = 30) -> Tuple[str, str]:
         is_pdf = url.lower().endswith(".pdf") or ("application/pdf" in content_type)
 
         if is_pdf:
-            text = extract_text_from_pdf_bytes(resp.content)
-            return text, "pdf"
+            return extract_text_from_pdf_bytes(resp.content), "pdf"
 
         soup = BeautifulSoup(resp.text, "html.parser")
-        text = soup.get_text(separator=" ", strip=True)
-        return text, "html"
+        return soup.get_text(separator=" ", strip=True), "html"
 
     except Exception as e:
         print(f"Error fetching {url}: {e}")
@@ -178,9 +279,6 @@ def chunk_text(text: str, chunk_size: int = 500, chunk_overlap: int = 50) -> Lis
 
 
 def filter_embeddings_and_chunks(embeddings: List[List[float]], chunks: List[str]) -> Tuple[List[List[float]], List[str]]:
-    """
-    Ensures embedding vectors all have the same dimension (keeps the most common).
-    """
     lengths = [len(e) for e in embeddings]
     most_common_length = Counter(lengths).most_common(1)[0][0]
     filtered_embeddings, filtered_chunks = [], []
@@ -198,7 +296,7 @@ def create_faiss_index(embeddings: List[List[float]]) -> faiss.Index:
     return index
 
 
-def search_index(index: faiss.Index, query_embedding: List[float], k: int = 5) -> List[int]:
+def search_index(index: faiss.Index, query_embedding: List[float], k: int = 20) -> List[int]:
     D, I = index.search(np.array([query_embedding]).astype("float32"), k)
     return I[0].tolist()
 
@@ -231,9 +329,6 @@ def ensure_dir(path: str) -> None:
 
 
 def compute_text_fingerprint(text: str) -> str:
-    """
-    Fingerprint the extracted text so we can detect policy changes and rebuild.
-    """
     h = hashlib.sha256()
     h.update(text.encode("utf-8", errors="ignore"))
     return h.hexdigest()
@@ -266,9 +361,6 @@ def load_app_store(app_slug: str) -> Tuple[List[str], faiss.Index, Dict[str, Any
 
 
 def build_or_load_app_store(app_name: str, url: str, rebuild: bool = False) -> Tuple[str, List[str], faiss.Index, Dict[str, Any]]:
-    """
-    Returns (app_slug, chunks, index, meta)
-    """
     app_slug = slugify(app_name)
     ensure_dir(STORE_ROOT)
     ensure_dir(app_store_dir(app_slug))
@@ -279,7 +371,6 @@ def build_or_load_app_store(app_name: str, url: str, rebuild: bool = False) -> T
 
     fingerprint = compute_text_fingerprint(text)
 
-    # Try to load existing store unless rebuild requested
     if not rebuild:
         try:
             chunks_existing, index_existing, meta_existing = load_app_store(app_slug)
@@ -288,9 +379,8 @@ def build_or_load_app_store(app_name: str, url: str, rebuild: bool = False) -> T
             else:
                 print(f"Policy text changed for {app_name} -> rebuilding index.")
         except Exception:
-            pass  # build below
+            pass
 
-    # Build new store
     chunks = chunk_text(text)
     print(f"  Chunks for {app_name}: {len(chunks)} (source={source_type})")
     print(f"  Embedding chunks for {app_name}...")
@@ -321,10 +411,6 @@ def build_or_load_app_store(app_name: str, url: str, rebuild: bool = False) -> T
 # ----------------------------
 
 def read_apps_file(file_path: str) -> Dict[str, Dict[str, str]]:
-    """
-    Returns mapping:
-      app_key -> {"app_name": <display>, "url": <url>, "slug": <slug>}
-    """
     apps: Dict[str, Dict[str, str]] = {}
     with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
@@ -340,12 +426,81 @@ def read_apps_file(file_path: str) -> Dict[str, Dict[str, str]]:
 
 
 # ----------------------------
+# Evidence selection logic
+# ----------------------------
+
+K_SEMANTIC = 20
+K_RETURN = 3
+MAX_EXPLICIT = 2
+
+
+def select_evidence(chunks: List[str], index: faiss.Index, app_slug: str, question: str) -> Tuple[List[Tuple[str, str]], Dict[str, Any]]:
+    terms = detect_terms(question)
+    syns = synonyms_for(terms)
+    matchers = build_matchers(syns)
+
+    query_embedding = ollama_embed([question], model=EMBED_MODEL)[0]
+    cand_indices = search_index(index, query_embedding, k=K_SEMANTIC)
+
+    explicit_in_candidates = []
+    if syns:
+        for idx in cand_indices:
+            if chunk_contains_any(chunks[idx], matchers):
+                explicit_in_candidates.append(idx)
+
+    explicit_global = []
+    if syns:
+        for i, ch in enumerate(chunks):
+            if chunk_contains_any(ch, matchers):
+                explicit_global.append(i)
+
+    chosen = []
+    explicit_chosen = []
+
+    for idx in explicit_in_candidates:
+        if idx not in chosen:
+            chosen.append(idx)
+            explicit_chosen.append(idx)
+        if len(explicit_chosen) >= MAX_EXPLICIT:
+            break
+
+    if len(explicit_chosen) < MAX_EXPLICIT:
+        for idx in explicit_global:
+            if idx not in chosen:
+                chosen.append(idx)
+                explicit_chosen.append(idx)
+            if len(explicit_chosen) >= MAX_EXPLICIT:
+                break
+
+    for idx in cand_indices:
+        if len(chosen) >= K_RETURN:
+            break
+        if idx not in chosen:
+            chosen.append(idx)
+
+    evidence_items = []
+    for idx in chosen[:K_RETURN]:
+        cid = f"{app_slug}#C{idx}"
+        evidence_items.append((cid, chunks[idx]))
+
+    debug = {
+        "detected_terms": terms,
+        "synonyms_used": syns,
+        "explicit_found_anywhere": bool(explicit_global),
+        "explicit_global_indices": explicit_global[:50],  # bounded for debug
+        "explicit_global_count": len(explicit_global),
+        "explicit_selected_count": len(explicit_chosen),
+        "semantic_candidate_count": len(cand_indices),
+    }
+    return evidence_items, debug
+
+
+# ----------------------------
 # Main
 # ----------------------------
 
 if __name__ == "__main__":
     apps = read_apps_file("apps.txt")
-
     if not apps:
         print("No apps found in apps.txt")
         raise SystemExit(1)
@@ -353,7 +508,6 @@ if __name__ == "__main__":
     print(f"Found {len(apps)} apps in apps.txt")
     print("Building/loading per-app FAISS stores...")
 
-    # app_key -> store objects
     stores: Dict[str, Dict[str, Any]] = {}
 
     for k, info in apps.items():
@@ -394,8 +548,8 @@ if __name__ == "__main__":
             print("App not found. Try 'list' and copy the exact name, or enter a close variant.")
             continue
 
-        user_question = input("Enter your question/finding: ").strip()
-        if user_question.lower() == "quit":
+        question = normalize_question(input("Enter your question/finding: ").strip())
+        if question.lower() == "quit":
             break
 
         store = stores[k]
@@ -403,27 +557,75 @@ if __name__ == "__main__":
         chunks = store["chunks"]
         index = store["index"]
 
-        # Retrieve
-        query_embedding = ollama_embed([user_question], model=EMBED_MODEL)[0]
-        top_k = search_index(index, query_embedding, k=5)
+        evidence_items, debug = select_evidence(chunks, index, app_slug, question)
 
-        # Build labeled contexts
-        contexts_labeled = []
-        evidence_items = []
-        for idx in top_k:
-            cid = f"{app_slug}#C{idx}"
-            chunk_text_str = chunks[idx]
-            contexts_labeled.append(f"[{cid}] {chunk_text_str}")
-            evidence_items.append((cid, chunk_text_str))
-
-        # Generate
-        answer = ollama_chat(contexts_labeled, user_question, model=CHAT_MODEL)
-
-        print("\nAnswer:\n", answer)
-
-        print("\nEvidence (retrieved chunks):")
+        print("\nClosest evidence (top 3 chunks):")
         for cid, ctext in evidence_items:
             print(f"\n[{cid}]\n{ctext}")
 
+        terms = debug["detected_terms"]
+        syns = debug["synonyms_used"]
+        matchers = build_matchers(syns)
+
+        # If no recognized terms at all, refuse (prevents arbitrary answers)
+        if not terms:
+            print("\nDecision: INSUFFICIENT EVIDENCE (no recognized privacy term in query)")
+            print("Tip: Ask using a specific term like location/IMEI/Aadhaar/Advertising ID/etc.")
+            print("\nSource:")
+            print(f"- {store['app_name']} ({store['url']})")
+            continue
+
+        # Deterministic path for "mention/contains/explicitly" queries
+        if is_mention_query(question):
+            if not debug["explicit_found_anywhere"]:
+                print("\nDecision: NOT EXPLICITLY MENTIONED (no explicit term match in policy text)")
+                print(f"Detected terms: {terms}")
+                print("Note: Showing closest semantic chunks above for human review.")
+                print("\nSource:")
+                print(f"- {store['app_name']} ({store['url']})")
+                continue
+
+            # YES: explicitly mentioned. Show matched sentences with citations (no LLM call).
+            print("\nDecision: EXPLICITLY MENTIONED")
+            print(f"Detected terms: {terms}")
+
+            # Prefer explicit chunks that are also in the top-3 evidence, else take first few global hits
+            explicit_cids = []
+            for cid, ctext in evidence_items:
+                if chunk_contains_any(ctext, matchers):
+                    explicit_cids.append((cid, ctext))
+
+            # If none of top-3 are explicit (rare), fall back to first global explicit indices
+            if not explicit_cids:
+                # take up to 3 global explicit indices
+                for idx in debug["explicit_global_indices"][:3]:
+                    cid = f"{app_slug}#C{idx}"
+                    explicit_cids.append((cid, chunks[idx]))
+
+            print("\nMatched sentence(s):")
+            for cid, ctext in explicit_cids[:3]:
+                hits = extract_matching_sentences(ctext, matchers)
+                # Print up to 3 hits per chunk
+                for h in hits[:3]:
+                    print(f'- "{h}" [{cid}]')
+
+            print("\nSource:")
+            print(f"- {store['app_name']} ({store['url']})")
+            continue
+
+        # Non-mention queries: keep your strict refusal policy
+        if terms and not debug["explicit_found_anywhere"]:
+            print("\nDecision: NOT EXPLICITLY MENTIONED (insufficient explicit evidence)")
+            print(f"Detected terms: {terms}")
+            print("Reason: No chunk in this policy contained the detected term(s). Showing closest semantic chunks above.")
+            print("\nSource:")
+            print(f"- {store['app_name']} ({store['url']})")
+            continue
+
+        # Otherwise: explicit evidence exists somewhere; allow model to summarize ONLY the top-3 evidence
+        contexts_labeled = [f"[{cid}] {ctext}" for cid, ctext in evidence_items]
+        answer = ollama_chat(contexts_labeled, question, model=CHAT_MODEL)
+
+        print("\nAnswer (with citations):\n", answer)
         print("\nSource:")
         print(f"- {store['app_name']} ({store['url']})")

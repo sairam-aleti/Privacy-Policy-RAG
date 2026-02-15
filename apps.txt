@@ -1,1 +1,19 @@
-Aarogya Setu: https://web.swaraksha.gov.in/ncv19/privacy/
+PayTM: https://paytm.com/company/terms-and-conditions?company=one97&tab=privacy
+Mobikwik: https://www.mobikwik.com/privacypolicy
+Freecharge: https://www.freecharge.in/termsandconditions
+Google Pay: https://payments.google.com/payments/apis-secure/u/0/get_legal_document?ldo=0&ldt=privacynotice&ldl=en 
+MCD App: https://mcdonline.nic.in/privacy-policy.html 
+mSeva: https://mseva.co.in/privacy-policy#:~:text=Private%20Data%20We%20Receive%20And%20Collect&text=The%20geographic%20area%20where%20you,assigned%20to%20you%20upon%20registration 
+BSES Rajdhani: https://www.bsesdelhi.com/web/brpl/privacy-policy 
+MahaDiscom: https://wss.mahadiscom.in/wss/images/MSEDCL_Privacy_Policy_Terms_Service.pdf 
+mPassport Seva: https://passportindia.gov.in/AppOnlineProject/onlineHtml/privacyPolicy.html 
+Aarogya Setu: https://web.swaraksha.gov.in/ncv19/privacy/ 
+Digilocker: https://www.digilocker.gov.in/web/about/digilocker-policy 
+CoinSwitch: https://coinswitch.co/privacy-policy
+CoinDCX: https://coindcx.com/legal/privacy-policy-coindcx/ 
+CoinDCX Web3: https://coindcx.com/legal/privacy-policy-coindcx-web3/
+Binance: https://www.binance.com/en/privacy 
+WazirX: https://wazirx.com/legal/privacy 
+DPDP Act: https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf
+GDPR: https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32016R0679 
+CPPA: https://cppa.ca.gov/regulations/pdf/ccpa_statute.pdf 
