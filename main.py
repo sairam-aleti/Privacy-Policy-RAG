@@ -3,7 +3,7 @@ import re
 import json
 import time
 import hashlib
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, Set
 
 import faiss
 import fitz  # PyMuPDF
@@ -119,7 +119,6 @@ PRIVACY_TERMS = {
     "cookies": ["cookie", "cookies"],
 }
 
-
 MENTION_TRIGGERS = [
     "mention", "mentions", "mentioned",
     "contain", "contains", "containing",
@@ -131,7 +130,6 @@ MENTION_TRIGGERS = [
 
 
 def normalize_question(q: str) -> str:
-    # helps with smart quotes etc.
     return (
         q.replace("“", '"')
          .replace("”", '"')
@@ -161,48 +159,36 @@ def synonyms_for(terms: List[str]) -> List[str]:
     syns: List[str] = []
     for t in terms:
         syns.extend(PRIVACY_TERMS.get(t, []))
-    # prefer longer first (e.g., "precise location" before "location")
     syns = sorted(set(syns), key=len, reverse=True)
     return syns
 
 
 def build_matchers(syns: List[str]):
-    """
-    Returns a list of (type, pattern_or_string).
-    - For very short syns like 'ip' or 'mac', use word-boundary regex.
-    - For longer syns, use case-insensitive substring.
-    """
     matchers = []
     for s in syns:
         s = s.strip().lower()
         if not s:
             continue
         if len(s) <= 3 and " " not in s:
-            # word boundary match for short tokens
             matchers.append(("regex", re.compile(rf"\b{re.escape(s)}\b", re.IGNORECASE)))
         else:
             matchers.append(("substr", s))
     return matchers
 
 
-def chunk_contains_any(chunk: str, matchers) -> bool:
-    c = chunk.lower()
+def chunk_contains_any(text: str, matchers) -> bool:
+    low = text.lower()
     for kind, pat in matchers:
         if kind == "substr":
-            if pat in c:
+            if pat in low:
                 return True
         else:
-            if pat.search(chunk):
+            if pat.search(text):
                 return True
     return False
 
 
 def extract_matching_sentences(chunk: str, matchers) -> List[str]:
-    """
-    Best-effort sentence extraction: split chunk into sentence-ish units
-    and return those that match.
-    """
-    # split on common boundaries; policies are messy, so keep it simple
     parts = re.split(r"(?<=[\.\?\!])\s+|\n+", chunk)
     hits = []
     for p in parts:
@@ -211,11 +197,77 @@ def extract_matching_sentences(chunk: str, matchers) -> List[str]:
             continue
         if chunk_contains_any(p, matchers):
             hits.append(p)
-    # If nothing matched by sentence splitting, but the chunk matches,
-    # return the whole chunk (still grounded).
     if not hits and chunk_contains_any(chunk, matchers):
         hits = [chunk.strip()]
     return hits
+
+
+# ----------------------------
+# Citation validation (NEW)
+# ----------------------------
+
+_CIT_RE = re.compile(r"\[([^\[\]]+)\]")  # extracts inside brackets
+
+
+def extract_citation_ids(answer_text: str) -> List[str]:
+    return _CIT_RE.findall(answer_text or "")
+
+
+def is_insufficient_evidence_answer(answer_text: str) -> bool:
+    if not answer_text:
+        return True
+    return "insufficient evidence" in answer_text.lower()
+
+
+def validate_llm_answer(answer_text: str, allowed_ids: Set[str]) -> Tuple[bool, Dict[str, Any]]:
+    """
+    Strict validator:
+    - Any bracketed citation must be in allowed_ids.
+    - If answer has bullet lines, each bullet must contain >=1 allowed citation.
+    - If answer is an 'Insufficient evidence...' refusal, accept it (no citations required).
+    """
+    report: Dict[str, Any] = {
+        "allowed_ids": sorted(list(allowed_ids)),
+        "all_bracket_ids": [],
+        "invalid_citations": [],
+        "bullets_checked": 0,
+        "bullets_missing_valid_citation": 0,
+    }
+
+    if is_insufficient_evidence_answer(answer_text):
+        report["reason"] = "model_refused_insufficient_evidence"
+        return True, report
+
+    all_ids = extract_citation_ids(answer_text)
+    report["all_bracket_ids"] = all_ids
+
+    invalid = [cid for cid in all_ids if cid not in allowed_ids]
+    report["invalid_citations"] = invalid
+    if invalid:
+        report["reason"] = "invalid_citation_ids_present"
+        return False, report
+
+    lines = [ln.strip() for ln in (answer_text or "").splitlines() if ln.strip()]
+    bullet_lines = [ln for ln in lines if ln.startswith(("-", "*", "•"))]
+
+    if bullet_lines:
+        report["bullets_checked"] = len(bullet_lines)
+        for ln in bullet_lines:
+            ids_in_line = extract_citation_ids(ln)
+            has_valid = any(cid in allowed_ids for cid in ids_in_line)
+            if not has_valid:
+                report["bullets_missing_valid_citation"] += 1
+        if report["bullets_missing_valid_citation"] > 0:
+            report["reason"] = "some_bullets_missing_valid_citation"
+            return False, report
+
+    # No bullets: require at least one valid citation somewhere (otherwise it's ungrounded narrative)
+    if not bullet_lines and len(all_ids) == 0:
+        report["reason"] = "no_citations_present"
+        return False, report
+
+    report["reason"] = "ok"
+    return True, report
 
 
 # ----------------------------
@@ -487,7 +539,7 @@ def select_evidence(chunks: List[str], index: faiss.Index, app_slug: str, questi
         "detected_terms": terms,
         "synonyms_used": syns,
         "explicit_found_anywhere": bool(explicit_global),
-        "explicit_global_indices": explicit_global[:50],  # bounded for debug
+        "explicit_global_indices": explicit_global[:50],
         "explicit_global_count": len(explicit_global),
         "explicit_selected_count": len(explicit_chosen),
         "semantic_candidate_count": len(cand_indices),
@@ -567,7 +619,6 @@ if __name__ == "__main__":
         syns = debug["synonyms_used"]
         matchers = build_matchers(syns)
 
-        # If no recognized terms at all, refuse (prevents arbitrary answers)
         if not terms:
             print("\nDecision: INSUFFICIENT EVIDENCE (no recognized privacy term in query)")
             print("Tip: Ask using a specific term like location/IMEI/Aadhaar/Advertising ID/etc.")
@@ -575,7 +626,7 @@ if __name__ == "__main__":
             print(f"- {store['app_name']} ({store['url']})")
             continue
 
-        # Deterministic path for "mention/contains/explicitly" queries
+        # Deterministic path for mention queries
         if is_mention_query(question):
             if not debug["explicit_found_anywhere"]:
                 print("\nDecision: NOT EXPLICITLY MENTIONED (no explicit term match in policy text)")
@@ -585,19 +636,15 @@ if __name__ == "__main__":
                 print(f"- {store['app_name']} ({store['url']})")
                 continue
 
-            # YES: explicitly mentioned. Show matched sentences with citations (no LLM call).
             print("\nDecision: EXPLICITLY MENTIONED")
             print(f"Detected terms: {terms}")
 
-            # Prefer explicit chunks that are also in the top-3 evidence, else take first few global hits
             explicit_cids = []
             for cid, ctext in evidence_items:
                 if chunk_contains_any(ctext, matchers):
                     explicit_cids.append((cid, ctext))
 
-            # If none of top-3 are explicit (rare), fall back to first global explicit indices
             if not explicit_cids:
-                # take up to 3 global explicit indices
                 for idx in debug["explicit_global_indices"][:3]:
                     cid = f"{app_slug}#C{idx}"
                     explicit_cids.append((cid, chunks[idx]))
@@ -605,7 +652,6 @@ if __name__ == "__main__":
             print("\nMatched sentence(s):")
             for cid, ctext in explicit_cids[:3]:
                 hits = extract_matching_sentences(ctext, matchers)
-                # Print up to 3 hits per chunk
                 for h in hits[:3]:
                     print(f'- "{h}" [{cid}]')
 
@@ -613,7 +659,7 @@ if __name__ == "__main__":
             print(f"- {store['app_name']} ({store['url']})")
             continue
 
-        # Non-mention queries: keep your strict refusal policy
+        # Non-mention strict refusal if no explicit evidence anywhere
         if terms and not debug["explicit_found_anywhere"]:
             print("\nDecision: NOT EXPLICITLY MENTIONED (insufficient explicit evidence)")
             print(f"Detected terms: {terms}")
@@ -622,10 +668,25 @@ if __name__ == "__main__":
             print(f"- {store['app_name']} ({store['url']})")
             continue
 
-        # Otherwise: explicit evidence exists somewhere; allow model to summarize ONLY the top-3 evidence
+        # Otherwise: LLM path, but with citation validation
         contexts_labeled = [f"[{cid}] {ctext}" for cid, ctext in evidence_items]
+        allowed_ids = {cid for cid, _ in evidence_items}
+
         answer = ollama_chat(contexts_labeled, question, model=CHAT_MODEL)
 
-        print("\nAnswer (with citations):\n", answer)
+        ok, report = validate_llm_answer(answer, allowed_ids)
+        if not ok:
+            print("\nDecision: REJECTED (invalid/missing citations in model output)")
+            print(f"Reason: {report.get('reason')}")
+            if report.get("invalid_citations"):
+                print(f"Invalid citations: {report['invalid_citations']}")
+            if report.get("bullets_missing_valid_citation", 0) > 0:
+                print(f"Bullets missing valid citation: {report['bullets_missing_valid_citation']}/{report.get('bullets_checked', 0)}")
+            print("Action: Not showing model answer. Use the evidence chunks above.")
+            print("\nSource:")
+            print(f"- {store['app_name']} ({store['url']})")
+            continue
+
+        print("\nAnswer (validated citations):\n", answer)
         print("\nSource:")
         print(f"- {store['app_name']} ({store['url']})")
