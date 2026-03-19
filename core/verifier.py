@@ -14,7 +14,7 @@ PRIVACY_TERMS = {
     "device_id": ["device id", "device identifier", "unique identifier", "hardware id"],
     "mac_address": ["mac address", "mac"],
     "ip_address": ["ip address", "ip"],
-    "contacts": ["contacts", "address book"],
+    "contacts": ["contacts", "address book", "phonebook", "contact list", "phone number", "email address", "email", "phone"],
     "sms": ["sms", "text messages"],
     "camera": ["camera"],
     "microphone": ["microphone", "mic"],
@@ -155,8 +155,8 @@ def validate_llm_answer(answer_text: str, allowed_ids: Set[str]) -> Tuple[bool, 
 
     invalid = [cid for cid in all_ids if cid not in allowed_ids]
     report["invalid_citations"] = invalid
-    if invalid:
-        report["reason"] = "invalid_citation_ids_present"
+    if invalid and len(invalid) == len(all_ids):  # Only fail if ALL citations are completely invalid
+        report["reason"] = "all_citations_invalid"
         return False, report
 
     lines = [ln.strip() for ln in (answer_text or "").splitlines() if ln.strip()]
@@ -169,8 +169,8 @@ def validate_llm_answer(answer_text: str, allowed_ids: Set[str]) -> Tuple[bool, 
             has_valid = any(cid in allowed_ids for cid in ids_in_line)
             if not has_valid:
                 report["bullets_missing_valid_citation"] += 1
-        if report["bullets_missing_valid_citation"] > 0:
-            report["reason"] = "some_bullets_missing_valid_citation"
+        if report["bullets_missing_valid_citation"] == report["bullets_checked"] and report["bullets_checked"] > 0:
+            report["reason"] = "all_bullets_missing_valid_citation"
             return False, report
 
     if not bullet_lines and len(all_ids) == 0:

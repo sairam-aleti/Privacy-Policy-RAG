@@ -33,10 +33,10 @@ def ollama_chat(contexts_labeled: List[str], finding_json: str, model: str = CHA
         "You are a strict privacy-policy auditor verifying a specific finding.\n"
         "Rules:\n"
         "1) Use ONLY the provided Context. Do NOT use outside knowledge.\n"
-        "2) Read the provided JSON Finding. Report what the Context says regarding the requested data and action.\n"
-        "3) Return 2-6 bullet points explaining the evidence found. Each bullet MUST end with one or more citations to chunk IDs exactly as they appear in the Context.\n"
-        "Example bullet point: Location data is retrieved and collected [paytm#C11].\n"
-        "4) If the Context does not mention the requested data at all, say 'Insufficient evidence in provided context.'\n"
+        "2) Read the provided JSON Finding and explicitly identify the value of the 'data_type' key (e.g., location, internet activity).\n"
+        "3) Report what the Context says regarding that specific data type being collected or shared.\n"
+        "4) Return 2-6 bullet points explaining the evidence found. Each bullet MUST end with one or more citations to chunk IDs exactly as they appear in the Context.\n"
+        "    Example bullet point: Location data is retrieved and collected [paytm#C11].\n"
         "5) Do NOT claim 'X not found in policy'. Only speak about what is present in Context.\n"
         "6) Do NOT invent citation IDs. NEVER use the 'finding_id' as a citation.\n"
     )
@@ -83,10 +83,10 @@ def ollama_chat(contexts_labeled: List[str], finding_json: str, model: str = CHA
 def ollama_verify_chunk(chunk_text: str, finding_json: str, model: str = CHAT_MODEL, timeout: int = 60) -> bool:
     system_msg = (
         "You are a boolean evaluator. "
-        "Read the provided Text and the JSON Finding. "
-        "Decide if the Text mentions the requested data referenced in the JSON Finding. "
-        "If the specific data type is mentioned in the Text, output exactly 'YES', even if the destination or purpose differ. "
-        "If the data type is not mentioned at all, output exactly 'NO'. "
+        "Read the JSON Finding and identify the value of the 'data_type' key (e.g. location, aadhaar). "
+        "Then, read the provided Text. "
+        "If the Text mentions that specific data type value, output exactly 'YES', even if the destination or purpose differ. "
+        "If the specific data type is not mentioned at all, output exactly 'NO'. "
         "Do not provide explanations."
     )
     user_msg = f"JSON Finding:\n{finding_json}\n\nText: {chunk_text}"

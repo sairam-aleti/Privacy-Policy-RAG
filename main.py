@@ -63,14 +63,26 @@ if __name__ == "__main__":
 
     print("\nRAG is ready. Type 'list' to see apps, 'quit' to exit.")
     while True:
-        raw_app = input("\nEnter app name for this query (or 'list'/'quit'): ").strip()
-        if raw_app.lower() == "quit":
+        raw_input_str = input("\nEnter app name, 'list', 'quit', or paste JSON payload directly:\n> ").strip()
+        if raw_input_str.lower() == "quit":
             break
-        if raw_app.lower() == "list":
+        if raw_input_str.lower() == "list":
             print("\nAvailable apps:")
             for info in stores.values():  # type: ignore
                 print(f"- {info.get('app_name', 'Unknown') if isinstance(info, dict) else 'Unknown'}")
             continue
+
+        raw_app = raw_input_str
+        question_str = ""
+        
+        # Check if the user pasted a full JSON payload
+        try:
+            q_data = json.loads(raw_input_str)
+            if isinstance(q_data, dict) and "app_name" in q_data:
+                raw_app = q_data["app_name"]
+                question_str = raw_input_str
+        except Exception:
+            pass
 
         k = app_key(raw_app)
         store = {}
@@ -84,9 +96,10 @@ if __name__ == "__main__":
             print("App not found. Try 'list' and copy the exact name, or enter a close variant.")
             continue
 
-        question_str = input("Enter your question/finding (plain text or JSON with 'data_type'): ").strip()
-        if question_str.lower() == "quit":
-            break
+        if not question_str:
+            question_str = input("Enter your question/finding (plain text or JSON with 'data_type'): ").strip()
+            if question_str.lower() == "quit":
+                break
             
         # Parse it to see if it is JSON, otherwise assume it's a data_type description
         try:
@@ -97,7 +110,7 @@ if __name__ == "__main__":
                 question = normalize_question(question_str)
         except Exception:
             # If plain English, wrap it in our structured prompt
-            question = generate_fake_finding(store.get('app_name', 'Unknown'), question_str)
+            question = generate_fake_finding(str(store.get('app_name', 'Unknown')), question_str)
 
         app_slug: str = str(store.get("app_slug", ""))  # type: ignore
         chunks: List[str] = store.get("chunks", [])  # type: ignore
@@ -110,8 +123,8 @@ if __name__ == "__main__":
         evidence_items = list(evidence_items_raw) if isinstance(evidence_items_raw, list) else []
         debug = dict(debug_raw) if isinstance(debug_raw, dict) else {}  # type: ignore
 
-        print("\nClosest evidence (top 5 chunks):")
-        for cid, ctext in evidence_items[:5]:  # type: ignore
+        print("\nClosest evidence (top 10 chunks):")
+        for cid, ctext in evidence_items[:10]:  # type: ignore
             print(f"\n[{cid}]\n{ctext}")
 
         terms = debug["detected_terms"]
@@ -177,7 +190,7 @@ if __name__ == "__main__":
         # Otherwise: LLM path, but with verified chunks + citation validation
         print("\nVerifying retrieved chunks dynamically with LLM...")
         verified_evidence = []
-        K_RETURN = 5
+        K_RETURN = 10
         for cid, ctext in evidence_items[:K_RETURN]:  # type: ignore
             if ollama_verify_chunk(ctext, question, model=CHAT_MODEL):
                 verified_evidence.append((cid, ctext))
@@ -189,7 +202,9 @@ if __name__ == "__main__":
             print(f"- {store.get('app_name', 'Unknown')} ({store.get('url', 'Unknown')})")  # type: ignore
             continue
             
-        print(f"Verifier passed {len(verified_evidence)} chunks out of {len(evidence_items)}.")
+        print(f"\nVerifier passed {len(verified_evidence)} chunks out of {K_RETURN}:")
+        for cid, _ in verified_evidence:
+            print(f"  ✓ Accepted: {cid}")
         
         # Keep up to top 5 verified
         final_evidence = verified_evidence[:5] if len(verified_evidence) > 5 else verified_evidence  # type: ignore
