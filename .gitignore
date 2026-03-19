@@ -9,3 +9,5 @@ __pycache__/
 
 # optional outputs
 output.txt
+
+experiment_results.jsonl
