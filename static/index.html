@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy RAG — Compliance Auditor</title>
+    <meta name="description" content="Automated privacy policy verification and compliance auditing dashboard">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🔒</div>
+                <div>
+                    <h1>Privacy Policy RAG</h1>
+                    <p class="subtitle">Automated Compliance Auditor</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-indicator" id="ollamaStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting…</span>
+                </div>
+                <div class="app-count" id="appCount">0 apps</div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Upload Section -->
+        <section class="upload-section">
+            <div class="upload-card glass-card">
+                <h2>Upload Findings</h2>
+                <p class="upload-desc">Drop a <code>.jsonl</code> file containing structured findings, or paste a single JSON finding below.</p>
+
+                <div class="dropzone" id="dropzone">
+                    <div class="dropzone-content">
+                        <div class="dropzone-icon">📄</div>
+                        <p>Drag & drop your <strong>fake_data.jsonl</strong> here</p>
+                        <span class="dropzone-hint">or click to browse</span>
+                    </div>
+                    <input type="file" id="fileInput" accept=".jsonl,.json,.txt" hidden>
+                </div>
+
+                <div class="divider"><span>or paste a single finding</span></div>
+
+                <div class="single-input">
+                    <textarea id="singleInput" rows="3" placeholder='{"finding_id": "F-001", "app_name": "PayTM", "data_type": "location", "action": "data collection"}'></textarea>
+                    <button id="singleBtn" class="btn btn-primary">Verify Finding</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Bar -->
+        <section class="progress-section hidden" id="progressSection">
+            <div class="glass-card">
+                <div class="progress-header">
+                    <h3 id="progressTitle">Processing findings…</h3>
+                    <span class="progress-count" id="progressCount">0 / 0</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Dashboard -->
+        <section class="results-section hidden" id="resultsSection">
+            <div class="results-header">
+                <h2>Verification Results</h2>
+                <div class="results-actions">
+                    <div class="results-stats" id="resultsStats"></div>
+                    <button id="exportBtn" class="btn btn-secondary">⬇ Export JSON</button>
+                </div>
+            </div>
+            <div class="results-grid" id="resultsGrid"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Privacy Policy RAG v2.0 — Powered by Ollama <code>llama3:8b</code> + FAISS</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
