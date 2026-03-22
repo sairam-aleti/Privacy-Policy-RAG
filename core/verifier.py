@@ -185,24 +185,39 @@ K_SEMANTIC = 20
 K_RETURN = 10
 MAX_EXPLICIT = 2
 
-def select_evidence(chunks: List[str], index: faiss.Index, app_slug: str, question: str) -> Tuple[List[Tuple[str, str]], Dict[str, Any]]:
-    # Embed the raw JSON string so we don't change how it semantically matches text.
+def select_evidence(chunks: List[str], index: faiss.Index, bm25, app_slug: str, question: str) -> Tuple[List[Tuple[str, str]], Dict[str, Any]]:
+    # 1. Semantic Search (FAISS)
     terms = detect_terms(question)
     syns = synonyms_for(terms)
     matchers = build_matchers(syns)
 
     query_embedding = ollama_embed([question], model=EMBED_MODEL)[0]
-    cand_indices = search_index(index, query_embedding, k=K_SEMANTIC)
+    faiss_cand_indices = search_index(index, query_embedding, k=K_SEMANTIC)
+
+    # 2. Lexical Search (BM25)
+    tokenized_query = question.lower().split()
+    bm25_scores = bm25.get_scores(tokenized_query)
+    bm25_indices = sorted(range(len(bm25_scores)), key=lambda i: bm25_scores[i], reverse=True)[:K_SEMANTIC]  # type: ignore
+
+    # 3. Reciprocal Rank Fusion (RRF)
+    # RRF Score = 1 / (k + rank_faiss) + 1 / (k + rank_bm25), standard k=60
+    rrf_scores: Dict[int, float] = {}
+    
+    for rank, idx in enumerate(faiss_cand_indices):
+        idx_int = int(idx)
+        rrf_scores[idx_int] = rrf_scores.get(idx_int, 0.0) + 1.0 / (60.0 + rank)
+        
+    for rank, idx in enumerate(bm25_indices):
+        rrf_scores[idx] = rrf_scores.get(idx, 0.0) + 1.0 / (60.0 + rank)
+        
+    # Sort all candidates by RRF score
+    hybrid_cand_indices = sorted(rrf_scores.keys(), key=lambda idx: rrf_scores[idx], reverse=True)
 
     explicit_in_candidates: List[int] = []
     if syns:
-        for val in cand_indices:
-            try:
-                idx = int(val)
-                if chunk_contains_any(chunks[idx], matchers):  # type: ignore
-                    explicit_in_candidates.append(int(idx))  # type: ignore
-            except (ValueError, TypeError):
-                pass
+        for val in hybrid_cand_indices:
+            if chunk_contains_any(chunks[val], matchers):
+                explicit_in_candidates.append(val)
 
     explicit_global: List[int] = []
     if syns:
@@ -215,43 +230,42 @@ def select_evidence(chunks: List[str], index: faiss.Index, app_slug: str, questi
 
     for idx in explicit_in_candidates:
         if idx not in chosen:
-            chosen.append(int(str(idx)))
-            explicit_chosen.append(int(str(idx)))
+            chosen.append(idx)
+            explicit_chosen.append(idx)
         if len(explicit_chosen) >= MAX_EXPLICIT:
             break
 
     if len(explicit_chosen) < MAX_EXPLICIT:
         for idx in explicit_global:
             if idx not in chosen:
-                chosen.append(int(str(idx)))
-                explicit_chosen.append(int(str(idx)))
+                chosen.append(idx)
+                explicit_chosen.append(idx)
             if len(explicit_chosen) >= MAX_EXPLICIT:
                 break
 
-    for idx in cand_indices:
+    for idx in hybrid_cand_indices:
         if len(chosen) >= K_RETURN:
             break
         if idx not in chosen:
-            chosen.append(int(str(idx)))
+            chosen.append(idx)
 
     evidence_items = []
     for i, idx_val in enumerate(chosen):
         if i >= K_RETURN:
             break
         try:
-            int_idx = int(idx_val)
-            cid = f"{app_slug}#C{int_idx}"
-            evidence_items.append((cid, chunks[int_idx]))  # type: ignore
-        except (ValueError, TypeError):
+            cid = f"{app_slug}#C{idx_val}"
+            evidence_items.append((cid, chunks[idx_val]))
+        except Exception:
             continue
 
     debug = {
         "detected_terms": terms,
         "synonyms_used": syns,
         "explicit_found_anywhere": bool(explicit_global),
-        "explicit_global_indices": [explicit_global[i] for i in range(min(50, len(explicit_global)))],  # type: ignore
+        "explicit_global_indices": [explicit_global[i] for i in range(min(50, len(explicit_global)))],
         "explicit_global_count": len(explicit_global),
         "explicit_selected_count": len(explicit_chosen),
-        "semantic_candidate_count": len(cand_indices),
+        "semantic_candidate_count": len(hybrid_cand_indices),
     }
     return evidence_items, debug

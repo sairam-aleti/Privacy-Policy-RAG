@@ -6,6 +6,8 @@ import numpy as np  # type: ignore
 import hashlib
 import time
 from typing import List, Tuple, Dict, Any
+import pickle
+from rank_bm25 import BM25Okapi  # type: ignore
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter  # type: ignore
 from .llm import ollama_embed, EMBED_MODEL, CHAT_MODEL  # type: ignore
@@ -63,6 +65,9 @@ def app_store_dir(app_slug: str) -> str:
 def app_index_path(app_slug: str) -> str:
     return os.path.join(app_store_dir(app_slug), "index.faiss")
 
+def app_bm25_path(app_slug: str) -> str:
+    return os.path.join(app_store_dir(app_slug), "bm25.pkl")
+
 def app_chunks_path(app_slug: str) -> str:
     return os.path.join(app_store_dir(app_slug), "chunks.json")
 
@@ -77,31 +82,36 @@ def compute_text_fingerprint(text: str) -> str:
     h.update(text.encode("utf-8", errors="ignore"))
     return h.hexdigest()
 
-def save_app_store(app_slug: str, chunks: List[str], index: faiss.Index, meta: Dict[str, Any]) -> None:
+def save_app_store(app_slug: str, chunks: List[str], index: faiss.Index, bm25: BM25Okapi, meta: Dict[str, Any]) -> None:
     ensure_dir(app_store_dir(app_slug))
     faiss.write_index(index, app_index_path(app_slug))
+    with open(app_bm25_path(app_slug), "wb") as f:
+        pickle.dump(bm25, f)
     with open(app_chunks_path(app_slug), "w", encoding="utf-8") as f:
         json.dump(chunks, f, ensure_ascii=False, indent=2)
     with open(app_meta_path(app_slug), "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
 
-def load_app_store(app_slug: str) -> Tuple[List[str], faiss.Index, Dict[str, Any]]:
+def load_app_store(app_slug: str) -> Tuple[List[str], faiss.Index, BM25Okapi, Dict[str, Any]]:
     idx_path = app_index_path(app_slug)
+    bm25_path = app_bm25_path(app_slug)
     ch_path = app_chunks_path(app_slug)
     m_path = app_meta_path(app_slug)
 
-    if not (os.path.exists(idx_path) and os.path.exists(ch_path) and os.path.exists(m_path)):
+    if not (os.path.exists(idx_path) and os.path.exists(bm25_path) and os.path.exists(ch_path) and os.path.exists(m_path)):
         raise FileNotFoundError("App store not found / incomplete.")
 
     index = faiss.read_index(idx_path)
+    with open(bm25_path, "rb") as f:
+        bm25 = pickle.load(f)
     with open(ch_path, "r", encoding="utf-8") as f:
         chunks = json.load(f)
     with open(m_path, "r", encoding="utf-8") as f:
         meta = json.load(f)
 
-    return chunks, index, meta
+    return chunks, index, bm25, meta
 
-def build_or_load_app_store(app_name: str, url: str, rebuild: bool = False) -> Tuple[str, List[str], faiss.Index, Dict[str, Any]]:
+def build_or_load_app_store(app_name: str, url: str, rebuild: bool = False) -> Tuple[str, List[str], faiss.Index, BM25Okapi, Dict[str, Any]]:
     app_slug = slugify(app_name)
     ensure_dir(STORE_ROOT)
     ensure_dir(app_store_dir(app_slug))
@@ -114,9 +124,9 @@ def build_or_load_app_store(app_name: str, url: str, rebuild: bool = False) -> T
 
     if not rebuild:
         try:
-            chunks_existing, index_existing, meta_existing = load_app_store(app_slug)
+            chunks_existing, index_existing, bm25_existing, meta_existing = load_app_store(app_slug)
             if meta_existing.get("fingerprint") == fingerprint:
-                return app_slug, chunks_existing, index_existing, meta_existing
+                return app_slug, chunks_existing, index_existing, bm25_existing, meta_existing
             else:
                 print(f"Policy text changed for {app_name} -> rebuilding index.")
         except Exception:
@@ -129,6 +139,10 @@ def build_or_load_app_store(app_name: str, url: str, rebuild: bool = False) -> T
     embeddings = ollama_embed(chunks, model=EMBED_MODEL)
     embeddings, chunks = filter_embeddings_and_chunks(embeddings, chunks)
     index = create_faiss_index(embeddings)
+    
+    # Build BM25
+    tokenized_corpus = [c.lower().split() for c in chunks]
+    bm25 = BM25Okapi(tokenized_corpus)
 
     meta = {
         "app_name": app_name,
@@ -143,8 +157,8 @@ def build_or_load_app_store(app_name: str, url: str, rebuild: bool = False) -> T
         "built_at": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
 
-    save_app_store(app_slug, chunks, index, meta)
-    return app_slug, chunks, index, meta
+    save_app_store(app_slug, chunks, index, bm25, meta)
+    return app_slug, chunks, index, bm25, meta
 
 def read_apps_file(file_path: str) -> Dict[str, Dict[str, str]]:
     apps: Dict[str, Dict[str, str]] = {}

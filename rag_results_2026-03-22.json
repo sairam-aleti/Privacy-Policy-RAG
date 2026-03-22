@@ -1,0 +1,476 @@
+[
+  {
+    "action": "data collection",
+    "answer": "Here are the evidence found regarding the specific data type being collected or shared:\n\n• The Context states that location data is retrieved and collected for fraud prevention and regional services purposes [paytm#C17]. \n• This implies that location data may be used to identify potential fraudulent activities or to provide region-specific services.",
+    "app_name": "PayTM",
+    "data_type": "location",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "paytm#C17",
+        "text": ". xii. To undertake financial, regulatory or management reporting and create and maintain various risk management models. xiii. To enable us to show you advertisements, selective offers and promotions, search results, location-based services, which are relevant to you and your interests. xiv. To aut"
+      },
+      {
+        "chunk_id": "paytm#C11",
+        "text": ". vi. Surveys- Opinions provided by you to us by way of feedback or responses to surveys. vii. Mobile Device Information- Information obtained from your mobile device by way of using the Paytm application, like device location, communication information including phone number, SIM Serial Number, con"
+      },
+      {
+        "chunk_id": "paytm#C14",
+        "text": ". To process the data for the specified purposes for which it was provided to us voluntarily. For example, if you make a purchase and request a receipt from us, Paytm may process your Personal Data for that purpose. ii. To facilitate the transactions or report on these transactions. iii. To undertak"
+      },
+      {
+        "chunk_id": "paytm#C23",
+        "text": ". For example, when you make purchases through the Paytm Platform, Paytm may collect and store information about you to process your requests and auto populate forms for future transactions. This information may be shared with third parties which assist in processing and fulfilling your requests, in"
+      },
+      {
+        "chunk_id": "paytm#C16",
+        "text": ". viii. To share with you, updates on changes to the products/ services and their terms and conditions including the Paytm Platform’s terms and conditions. ix. To take up or investigate any complaints, claims or disputes raised by you or any third- parties. x. To notify in case of suspicious activit"
+      }
+    ],
+    "finding_id": "F-PAYTM-001",
+    "purpose": "fraud prevention and regional services",
+    "source_url": "https://paytm.com/company/terms-and-conditions?company=one97&tab=privacy",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "Based on the provided Context, here are 2-6 bullet points explaining the evidence found regarding the 'sms' data type being collected or shared:\n\n• The Context explicitly mentions that \"[vii] Mobile Device Information- Information obtained from your mobile device by way of using the Paytm application, like device location, communication information including phone number, SIM Serial Number, contacts and call logs, device information (including storage, model, IMEI, Network Carrier information), transactional and promotional SMS/app notifications\" is collected.\n• However, it does not explicitly state that 'sms' data type is being collected or shared. It only mentions \"transactional and promotional SMS/app notifications\".\n\nCorrected response:\n\n• There is no direct evidence provided in the Context regarding the collection or sharing of 'sms' data type specifically.",
+    "app_name": "PayTM",
+    "data_type": "sms",
+    "destination": "first party server",
+    "error": "all_citations_invalid",
+    "evidence": [
+      {
+        "chunk_id": "paytm#C11",
+        "text": ". vi. Surveys- Opinions provided by you to us by way of feedback or responses to surveys. vii. Mobile Device Information- Information obtained from your mobile device by way of using the Paytm application, like device location, communication information including phone number, SIM Serial Number, con"
+      },
+      {
+        "chunk_id": "paytm#C14",
+        "text": ". To process the data for the specified purposes for which it was provided to us voluntarily. For example, if you make a purchase and request a receipt from us, Paytm may process your Personal Data for that purpose. ii. To facilitate the transactions or report on these transactions. iii. To undertak"
+      },
+      {
+        "chunk_id": "paytm#C23",
+        "text": ". For example, when you make purchases through the Paytm Platform, Paytm may collect and store information about you to process your requests and auto populate forms for future transactions. This information may be shared with third parties which assist in processing and fulfilling your requests, in"
+      },
+      {
+        "chunk_id": "paytm#C9",
+        "text": ". Contact Details- Name, mobile number, residential address, date of birth, documents such as identity card, passport details, Aadhaar details, PAN, Voter ID, driving license, education details. ii. Transaction and Financial Details- Transaction history, payment details and financial details, such a"
+      },
+      {
+        "chunk_id": "paytm#C17",
+        "text": ". xii. To undertake financial, regulatory or management reporting and create and maintain various risk management models. xiii. To enable us to show you advertisements, selective offers and promotions, search results, location-based services, which are relevant to you and your interests. xiv. To aut"
+      }
+    ],
+    "finding_id": "F-PAYTM-002",
+    "purpose": "OTP auto-read and transaction verification",
+    "source_url": "https://paytm.com/company/terms-and-conditions?company=one97&tab=privacy",
+    "status": "PARTIALLY_VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data sharing",
+    "answer": "Based on the provided Context, here are 2-6 bullet points explaining the evidence found regarding the 'data_type' key being 'device info':\n\n• Device location data is retrieved and collected [paytm#C11].\n• Device information (including storage, model, IMEI, Network Carrier information) is collected [paytm#C11].\n• Communication information including phone number, SIM Serial Number, contacts, and call logs from the mobile device are obtained by using the Paytm application [paytm#C11].\n• Information about device storage, model, and other details may be shared with third parties for research analytics [paytm#C23].",
+    "app_name": "PayTM",
+    "data_type": "device info",
+    "destination": "third party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "paytm#C11",
+        "text": ". vi. Surveys- Opinions provided by you to us by way of feedback or responses to surveys. vii. Mobile Device Information- Information obtained from your mobile device by way of using the Paytm application, like device location, communication information including phone number, SIM Serial Number, con"
+      },
+      {
+        "chunk_id": "paytm#C14",
+        "text": ". To process the data for the specified purposes for which it was provided to us voluntarily. For example, if you make a purchase and request a receipt from us, Paytm may process your Personal Data for that purpose. ii. To facilitate the transactions or report on these transactions. iii. To undertak"
+      },
+      {
+        "chunk_id": "paytm#C23",
+        "text": ". For example, when you make purchases through the Paytm Platform, Paytm may collect and store information about you to process your requests and auto populate forms for future transactions. This information may be shared with third parties which assist in processing and fulfilling your requests, in"
+      },
+      {
+        "chunk_id": "paytm#C17",
+        "text": ". xii. To undertake financial, regulatory or management reporting and create and maintain various risk management models. xiii. To enable us to show you advertisements, selective offers and promotions, search results, location-based services, which are relevant to you and your interests. xiv. To aut"
+      },
+      {
+        "chunk_id": "paytm#C21",
+        "text": ". Paytm does not engage in tracking, behavioural monitoring or targeted advertising concerning children’s Personal Data. 6. DOES PAYTM USE COOKIES AND OTHER TRACKING TECHNOLOGIES? Paytm may use cookies and other tracking technology depending on the features offered, to enhance your experience, analy"
+      }
+    ],
+    "finding_id": "F-PAYTM-003",
+    "purpose": "analytics and crash reporting",
+    "source_url": "https://paytm.com/company/terms-and-conditions?company=one97&tab=privacy",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "Based on the provided Context, here are 6 bullet points explaining the evidence found regarding the specific data type being collected:\n\n• The service providers used by CoinDCX include third parties for authentication and fraud prevention/risk assessment [coindcx#C11].\n• Financial Data is collected, including bank account details, credit/debit card numbers, transaction history, and more, which are used for purposes like wallet top-ups and withdrawals [coindcx#C29].\n• When manually inputting Transaction Id/Reference/UTR number, CoinDCX does not upload SMS data to remote servers or share it with external parties [coindcx#C43].\n• Internet protocol (IP) address, login information, browser details, and location are accessed and shared to some extent through device settings [coindcx#C34].\n• Access to apps, services, messaging, storage data, device details, camera access, notifications, photos, videos, phone contacts is permitted through device settings [coindcx#C34].\n• Information about visits includes URL clickstream with timestamp, transactions executed, viewed items, page response times, and browsing methods [coindcx#C35].",
+    "app_name": "CoinDCX",
+    "data_type": "payment",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "coindcx#C90",
+        "text": ". Service providers may be used, including without limitation: (a) to authenticate your identification information and documents to process your payments; (b) to check information against public databases; (c) for fraud prevention and risk assessment; (d) to allow the provision of Services through t"
+      },
+      {
+        "chunk_id": "coindcx#C29",
+        "text": ". Financial Data – bank account details, permanent account number, credit or debit card number, transaction history, credit history, trading data, UPI, tax identification details, your status on any sanctions lists / blacklists / defaulter lists maintained by public authorities or authorised bureaus"
+      },
+      {
+        "chunk_id": "coindcx#C43",
+        "text": ". In the event, you decide to proceed manually with inputting Transaction Id/ Reference/ UTR number as you proceed with the money transfer in your wallet, you accept the responsibility for any manual error that may result in the failure of transferred money not reflecting in your digital wallets. Yo"
+      },
+      {
+        "chunk_id": "coindcx#C34",
+        "text": ". Internet protocol (IP) address, your login information, browser details, time zone setting, browser plug-in types and versions, operating system and platform and other similar information. Access to your apps and services including messaging through SMS, storage data, device details, camera access"
+      },
+      {
+        "chunk_id": "coindcx#C35",
+        "text": ". Information about your visit: Uniform Resource Locators (URL) clickstream with timestamp; transactions and trades executed or attempted to be executed by you; viewed and searched items; page response times, download errors, length of visits to certain pages, page interaction information (such as s"
+      }
+    ],
+    "finding_id": "F-COINDCX-001",
+    "purpose": "wallet top-ups and withdrawals",
+    "source_url": "https://coindcx.com/legal/privacy-policy-coindcx/",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "Based on the provided Context, here are 2-6 bullet points explaining the evidence found regarding the 'camera' data type being collected or shared:\n\n• The application collects camera-related information [coindcx#C35] as part of its data collection process.\n• This information is processed internally towards the Services and may be combined with other data sources, including public databases and social media platforms [coindcx#C39].\n• The purpose of collecting this camera-related information is for KYC verification and document scanning purposes [coindcx#C30].\n• Camera access is required to enable certain features on the Online Platforms and to detect fraudulent transactions [coindcx#C35].\n• Transaction Information includes details about digital currency and wallet/account addresses, which may involve camera data related to identification verification.\n• The data is stored on a first-party server, indicating that it is retained by the application itself [coindcx#C30].",
+    "app_name": "CoinDCX",
+    "data_type": "camera",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "coindcx#C34",
+        "text": ". Internet protocol (IP) address, your login information, browser details, time zone setting, browser plug-in types and versions, operating system and platform and other similar information. Access to your apps and services including messaging through SMS, storage data, device details, camera access"
+      },
+      {
+        "chunk_id": "coindcx#C31",
+        "text": ". Employment or Business Information – office location, job title, and/or description of Business, role, etc. If you are not a natural person, this would extend to your constitutional documents, shareholding and beneficial holding details, company master data, and any other substantive proof you may"
+      },
+      {
+        "chunk_id": "coindcx#C39",
+        "text": ". This includes, without limitation, information from public databases, credit bureaus, KYC verification partners, resellers and channel partners, joint marketing partners, and social media platforms. We may combine and process such data internally towards our Services"
+      },
+      {
+        "chunk_id": "coindcx#C35",
+        "text": ". Information about your visit: Uniform Resource Locators (URL) clickstream with timestamp; transactions and trades executed or attempted to be executed by you; viewed and searched items; page response times, download errors, length of visits to certain pages, page interaction information (such as s"
+      },
+      {
+        "chunk_id": "coindcx#C30",
+        "text": ". Location Data – we may seek your location data for providing certain Services or in order to enable you to access certain features of the Online Platforms or in the event we suspect any fraudulent transactions. Transaction Information – Information about the transactions by using the Online Platfo"
+      }
+    ],
+    "finding_id": "F-COINDCX-002",
+    "purpose": "KYC verification and document scanning",
+    "source_url": "https://coindcx.com/legal/privacy-policy-coindcx/",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "Digilocker",
+    "data_type": "aadhaar",
+    "destination": "first party server",
+    "error": "Term(s) ['aadhaar'] not explicitly found in the policy text.",
+    "evidence": [
+      {
+        "chunk_id": "digilocker#C-1",
+        "text": "DigiLocker:An Initiative Towards Paperless Governance"
+      },
+      {
+        "chunk_id": "digilocker#C0",
+        "text": "DigiLocker:An Initiative Towards Paperless Governance"
+      }
+    ],
+    "finding_id": "F-DIGILOCKER-001",
+    "purpose": "user authentication and document fetching",
+    "source_url": "https://www.digilocker.gov.in/web/about/digilocker-policy",
+    "status": "NOT_FOUND",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data sharing",
+    "answer": "",
+    "app_name": "Digilocker",
+    "data_type": "name",
+    "destination": "partner portals",
+    "error": "Term(s) ['name'] not explicitly found in the policy text.",
+    "evidence": [
+      {
+        "chunk_id": "digilocker#C-1",
+        "text": "DigiLocker:An Initiative Towards Paperless Governance"
+      },
+      {
+        "chunk_id": "digilocker#C0",
+        "text": "DigiLocker:An Initiative Towards Paperless Governance"
+      }
+    ],
+    "finding_id": "F-DIGILOCKER-002",
+    "purpose": "issuing verified documents",
+    "source_url": "https://www.digilocker.gov.in/web/about/digilocker-policy",
+    "status": "NOT_FOUND",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "Based on the provided Context, here are 2-6 bullet points explaining the evidence found regarding the 'data_type' key as 'location':\n\n* The application Aarogya Setu collects GPS Location data for showing location-specific health information, including nearby labs, blood banks, and health service providers [aarogya_setu#C1].\n* This location data is collected with the user's consent, as users are requested to provide consent for utilizing their personal data upon registration [aarogya_setu#C4].\n* The purpose of collecting this location data is primarily for contact tracing and risk assessment during the COVID-19 pandemic [F-AAROGYA-001].\n* After the discontinuation of the contact tracing feature, the application transformed into a National Health Application, but it still collects GPS Location data for other health services such as booking online appointments at Government/Private hospitals [aarogya_setu#C2].",
+    "app_name": "Aarogya Setu",
+    "data_type": "location",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "aarogya_setu#C21",
+        "text": "following permissions on your device: Camera: For scanning QR Codes, documents, Face Authentication etc. as required Location: GPS Location data for showing location specific health information including\n              nearby labs, blood banks, health service providers etc. Read and Write in Device S"
+      },
+      {
+        "chunk_id": "aarogya_setu#C0",
+        "text": "Privacy Policy Aarogya Setu Privacy Policy Aarogya Setu was primarily launched to aid in tracing the contacts with COVID-19 positive persons. Primarily, Aarogya Setu was Contact Tracing App and assisted citizens in getting useful information about COVID-19. As the covid-19 spread and infection has m"
+      },
+      {
+        "chunk_id": "aarogya_setu#C2",
+        "text": ". After discontinuation of contact tracing feature, Aarogya Setu has now been transformed into a National Health Application and is already offering plethora of health services such as creation of ABHA (Unique Health ID), providing telemedicine services, booking online appointments at Government/Pri"
+      },
+      {
+        "chunk_id": "aarogya_setu#C7",
+        "text": "ABHA (Ayushman Bharat Health Account) Address as a unique identifier (self-declared\n              username) that enables you to share and access your health records digitally. ABHA\n              number is a 14-digit number that will uniquely identify you as a participant in\n              India’s dig"
+      },
+      {
+        "chunk_id": "aarogya_setu#C4",
+        "text": "follows privacy and consent-based information sharing as a guiding principle. The\n          aggregate and anonymous data collected in the application can be utilized by the\n          Government for analysis and monitoring of healthcare programs to aid policy decisions in\n          consonance with th"
+      }
+    ],
+    "finding_id": "F-AAROGYA-001",
+    "purpose": "contact tracing and risk assessment",
+    "source_url": "https://web.swaraksha.gov.in/ncv19/privacy/",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "Based on the provided Context, here are 2-6 bullet points explaining the evidence found regarding the 'health' data type:\n\n* The app collects ABHA address as a unique identifier that enables users to share and access their health records digitally. This implies that location data may not be explicitly collected but is potentially tied to health records [aarogya_setu#C7].\n* The app shares COVID statistics/updates/guidelines, which suggests that it may collect health-related data [aarogya_setu#C1].\n* The app displays user status as “You are COVID-19 positive” if the patient’s mobile number matches with registered mobile numbers in ICMR databases. This indicates that the app may collect sensitive health information, including COVID-19 status, and display it to users [aarogya_setu#C1].\n* The aggregate and anonymous data collected can be utilized by the Government for analysis and monitoring of healthcare programs. This suggests that the app collects health-related data that may be used for public health purposes [aarogya_setu#C4].\n* The storage services are provisioned through secured DigiLocker, which indicates that health records may be stored in a secure environment [aarogya_setu#C15].",
+    "app_name": "Aarogya Setu",
+    "data_type": "health",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "aarogya_setu#C7",
+        "text": "ABHA (Ayushman Bharat Health Account) Address as a unique identifier (self-declared\n              username) that enables you to share and access your health records digitally. ABHA\n              number is a 14-digit number that will uniquely identify you as a participant in\n              India’s dig"
+      },
+      {
+        "chunk_id": "aarogya_setu#C8",
+        "text": "will be accepted by healthcare providers and payers across the country. You can use your ABHA number to seamlessly sign up for an ABHA address in order to\n              maintain longitudinal health records and share the health records. You can participate\n              at your own free will and choo"
+      },
+      {
+        "chunk_id": "aarogya_setu#C1",
+        "text": ". However, the app still shares COVID statistics/updates/guidelines and facilitate in downloading COVID-19 Vaccination Certificates. It also displays user status as “You are COVID-19 positive”, if patient’s mobile number given in ICMR database matches with registered mobile number of Aarogya Setu"
+      },
+      {
+        "chunk_id": "aarogya_setu#C4",
+        "text": "follows privacy and consent-based information sharing as a guiding principle. The\n          aggregate and anonymous data collected in the application can be utilized by the\n          Government for analysis and monitoring of healthcare programs to aid policy decisions in\n          consonance with th"
+      },
+      {
+        "chunk_id": "aarogya_setu#C15",
+        "text": "and specialists from their mobile phones and can get information about government\n            healthcare services. The storage services are provisioned through secured DigiLocker and\n            consent-based framework under this application. Timely sharing of health record by citizen with medical p"
+      }
+    ],
+    "finding_id": "F-AAROGYA-002",
+    "purpose": "self-assessment and status monitoring",
+    "source_url": "https://web.swaraksha.gov.in/ncv19/privacy/",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "Based on the provided Context, here are 2-6 bullet points explaining the evidence found regarding the collection or sharing of 'phone_number' data:\n\n• The Application collects users' phone numbers when they download and register for the Application [paytm#C4].\n• Phone number is not explicitly listed as a separate data type in the Automatically Collected Information section, but it can be inferred that phone numbers are included under the general category of \"information about the way you use the Application\" [mcd_app#C6].\n• There is no mention of sharing or processing phone numbers with third parties beyond the first-party server.\n• The purpose of collecting phone numbers is for account registration, as stated in the JSON Finding [F-MCD-001].\n• Phone number data is not explicitly mentioned in the sections related to user-provided information, such as name, email address, age, and other registration details [mcd_app#C4].\n• No evidence suggests that the Application will use phone numbers for any purpose beyond account registration, or that it will share them with authorities or third-party servers without consent.",
+    "app_name": "MCD App",
+    "data_type": "phone_number",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "mcd_app#C-1",
+        "text": ". You can check the history of this policy by clicking here. Your Consent By using the Application, you are consenting to our processing of your information as set forth in this Privacy Policy now and as amended by us. Contact us If you have any questions regarding privacy while using the Applicatio"
+      },
+      {
+        "chunk_id": "mcd_app#C4",
+        "text": ". When you register and use the Application, you generally provide (a) your name, email address, age, user name, password and other registration information; (b) download or use applications from us; (c) information you provide when you contact us for help; (d) credit card information for use of the"
+      },
+      {
+        "chunk_id": "mcd_app#C0",
+        "text": "Privacy Policy for Mobile App Privacy Policy for MCD App This privacy policy governs your use of the software applications (“MCD Online Services”) for mobile devices that was hosted at NIC e-Gov Mobile App Store in Google Play/App Store. The Applications mainly provide eGovernance Services delivery "
+      },
+      {
+        "chunk_id": "mcd_app#C6",
+        "text": ". Automatically Collected Information : In addition, the Application may collect certain information automatically, including, but not limited to, the type of mobile device you use, your mobile devices unique device ID, the IP address of your mobile device, your mobile operating system, the type of "
+      },
+      {
+        "chunk_id": "mcd_app#C2",
+        "text": ". Users are advised to verify the correctness of the facts published here from the concerned authorities. Neither National Informatics Centre nor Government of India and its allied establishments will not be responsible for the accuracy and correctness of the contents available in these applications"
+      }
+    ],
+    "finding_id": "F-MCD-001",
+    "purpose": "account registration",
+    "source_url": "https://mcdonline.nic.in/privacy-policy.html",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "Based on the provided Context, here are 2-6 bullet points explaining the evidence found regarding the 'data_type' key 'payment':\n\n• The Context mentions that users can pay bills at Mahavitaran by using a Debit/Credit Card or through using their Online Banking Account [mahadiscom#C16].\n• When initiating a payment transaction, users are required to provide their Card/Bank details, warranting that they are lawfully entitled to use such Credit/Debit Card for the transactions [mahadiscom#C16].\n• The Context also mentions that Bill payments by users to Mahavitaran may be made through an electronic and automated collection and remittance service (the “Payment Gateway”) hosted through HDFC bank and BillDesk [mahadiscom#C5].\n• This indicates that the Payment Gateway is involved in processing payment transactions, which likely involves collecting payment-related data [mahadiscom#C5].\n• Furthermore, MAHAVITARAN does not represent or guarantee that the use of the payment gateway will not result in theft and/or unauthorized use of data over the Internet [mahadiscom#C12].\n• The purpose of the Payment Gateway is to facilitate bill payment processing for MSEDCL's online payment service offered through the MSEDCL website [mahadiscom#C33].",
+    "app_name": "MahaDiscom",
+    "data_type": "payment",
+    "destination": "payment gateways",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "mahadiscom#C6",
+        "text": "service is provided to you in order to facilitate access to view and pay your bills online. \nMAHAVITARAN makes no representation of any kind, express or implied, as to the \noperation of the Payment Gateway. You expressly agree that your use of this online \npayment service is entirely at your own ris"
+      },
+      {
+        "chunk_id": "mahadiscom#C5",
+        "text": "updates. \nOnline Privacy Policy Only \nThis online privacy policy applies only to information collected through our website \nand not to information collected offline. \nPayment Gateway Disclaimer \n \nBill payments by you to Mahavitaran may be made through an electronic and \nautomated collection and rem"
+      },
+      {
+        "chunk_id": "mahadiscom#C16",
+        "text": "debit/credit card details. \n \nYou may pay bills at Mahavitaran by using a Debit/Credit Card or through using your \nOnline Banking Account.  When You initiate a payment transaction and/or issue a \nonline payment Instruction and provide Your Card / Bank details: \n \n\u0001 \nYou warrant that Your fully and l"
+      },
+      {
+        "chunk_id": "mahadiscom#C12",
+        "text": "unauthorized use of any information transmitted by you, MAHAVITARAN does \nnot represent or guarantee that the use of the payment gateway will not result \nin theft and/or unauthorized use of data over the Internet. \n7. \nMSEDCL, the Payment Service Providers and its affiliates and associates shall \nno"
+      },
+      {
+        "chunk_id": "mahadiscom#C33",
+        "text": "tort or otherwise, to submit to the jurisdiction of the courts located at Mumbai, India for \nthe resolution of all such disputes. \nTerms and conditions related to e-payment \n1. \nThe following terms and conditions will apply to the user of MSEDCL's online \npayment gateway service offered through the "
+      }
+    ],
+    "finding_id": "F-MAHADISCOM-001",
+    "purpose": "bill payment processing",
+    "source_url": "https://wss.mahadiscom.in/wss/images/MSEDCL_Privacy_Policy_Terms_Service.pdf",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "MahaDiscom",
+    "data_type": "address",
+    "destination": "first party server",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-MAHADISCOM-002",
+    "purpose": "meter reading and service connection",
+    "source_url": "https://wss.mahadiscom.in/wss/images/MSEDCL_Privacy_Policy_Terms_Service.pdf",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "Here are the evidence points regarding the specific data type being collected or shared:\n\n• The Google Pay service collects information about the seller and buyer, including names and email addresses [google_pay#C6].\n• Google may collect National Insurance numbers or taxpayer identification numbers (or other government-issued identification numbers) for users [google_pay#C6].\n• Registration information, which includes email addresses, is collected when a user signs up for Google Payments [google_pay#C19].\n• No direct evidence of contacts being collected under this specific finding exists; however, the \"data_type\" field has been identified as 'contacts'.",
+    "app_name": "Google Pay",
+    "data_type": "contacts",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "google_pay#C12",
+        "text": ". Transaction information When you use Google Payments to conduct a transaction, we may collect information about the transaction, including: The date, time and amount of the transaction The merchant's location and description A description provided by the seller of the goods or services purchased A"
+      },
+      {
+        "chunk_id": "google_pay#C6",
+        "text": ". Depending on the Google Payments services you use, in addition to the information listed in the Google Privacy Policy, you may be asked to provide information, such as: Credit or debit card number and card expiry date Bank account number and expiry date Address Phone number Date of birth National "
+      },
+      {
+        "chunk_id": "google_pay#C19",
+        "text": "a service provided by a third party Where Google Pay is available, to inform a third-party merchant, whose site or app you visit, whether you have a Google payments profile that can be used to make payments through that merchant's site or app"
+      },
+      {
+        "chunk_id": "google_pay#C26",
+        "text": ".  In this process, Google may share limited details about your payment method, such as the card network and last 4 digits of your card number, solely to help you identify your chosen payment method When you transact with a third party (like merchants and payment service providers), we may send frau"
+      },
+      {
+        "chunk_id": "google_pay#C5",
+        "text": "apply to the Google Pay service provided to users resident in India by Google India Digital Services Private Limited Information we collect In addition to the information listed in the Google Privacy Policy , we may also collect the following: Registration information When you sign up for Google Pay"
+      }
+    ],
+    "finding_id": "F-GOOGLEPAY-001",
+    "purpose": "facilitating peer-to-peer payments",
+    "source_url": "https://payments.google.com/payments/apis-secure/u/0/get_legal_document?ldo=0&ldt=privacynotice&ldl=en",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data sharing",
+    "answer": "Here are the evidence points regarding the collection, sharing, or purpose of location data:\n\n• Google Pay collects location information [paytm#C11] when you use the service to conduct a transaction.\n• The merchant's location and description are retrieved and collected during transactions [google_pay#C12].\n• Location data is shared with third-party servers for fraud prevention and risk analysis purposes, as stated in the JSON Finding [F-GOOGLEPAY-002#].",
+    "app_name": "Google Pay",
+    "data_type": "location",
+    "destination": "third party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "google_pay#C12",
+        "text": ". Transaction information When you use Google Payments to conduct a transaction, we may collect information about the transaction, including: The date, time and amount of the transaction The merchant's location and description A description provided by the seller of the goods or services purchased A"
+      },
+      {
+        "chunk_id": "google_pay#C25",
+        "text": ". The information may include your name, profile image, email, Internet protocol (IP) address, billing address, phone number, device information, location, and Google Account activity information Where Google Pay is available, to ensure a smoother experience and present you with relevant payment opt"
+      },
+      {
+        "chunk_id": "google_pay#C26",
+        "text": ".  In this process, Google may share limited details about your payment method, such as the card network and last 4 digits of your card number, solely to help you identify your chosen payment method When you transact with a third party (like merchants and payment service providers), we may send frau"
+      },
+      {
+        "chunk_id": "google_pay#C21",
+        "text": ". You can choose to turn off this setting To share fraud risk scores and other fraud assessments with third parties that use Google’s risk score and fraud prevention services, in order to protect your transactions with third parties from fraud and abuse To help ensure your payment method is secure a"
+      },
+      {
+        "chunk_id": "google_pay#C15",
+        "text": "you request from them Review your Google payments profile to determine whether you continue to meet the terms of the service Make decisions about your future Google Payments transactions Build and train fraud risk models with your historic and current information, and produce fraud risk scores and a"
+      }
+    ],
+    "finding_id": "F-GOOGLEPAY-002",
+    "purpose": "fraud prevention and risk analysis",
+    "source_url": "https://payments.google.com/payments/apis-secure/u/0/get_legal_document?ldo=0&ldt=privacynotice&ldl=en",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "Freecharge",
+    "data_type": "device_id",
+    "destination": "first party server",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-FREECHARGE-001",
+    "purpose": "device binding and security",
+    "source_url": "https://www.freecharge.in/termsandconditions",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  }
+]

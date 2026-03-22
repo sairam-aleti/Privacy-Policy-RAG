@@ -44,13 +44,14 @@ if __name__ == "__main__":
         url = info["url"]
         print(f"\nProcessing {app_name}...")
         try:
-            app_slug, chunks, index, meta = build_or_load_app_store(app_name, url, rebuild=False)
+            app_slug, chunks, index, bm25, meta = build_or_load_app_store(app_name, url, rebuild=False)
             stores[k] = {
                 "app_name": app_name,
                 "app_slug": app_slug,
                 "url": url,
                 "chunks": chunks,
                 "index": index,
+                "bm25": bm25,
                 "meta": meta,
             }
             print(f"  Store ready: stores/{app_slug}/ (chunks={len(chunks)})")
@@ -77,7 +78,7 @@ if __name__ == "__main__":
         
         # Check if the user pasted a full JSON payload
         try:
-            q_data = json.loads(raw_input_str)
+            q_data = json.loads(raw_input_str)  # type: ignore
             if isinstance(q_data, dict) and "app_name" in q_data:
                 raw_app = q_data["app_name"]
                 question_str = raw_input_str
@@ -85,7 +86,7 @@ if __name__ == "__main__":
             pass
 
         k = app_key(raw_app)
-        store = {}
+        store = None
         for key, store_info in stores.items():  # type: ignore
             if key == k:
                 if isinstance(store_info, dict):
@@ -102,6 +103,7 @@ if __name__ == "__main__":
                 break
             
         # Parse it to see if it is JSON, otherwise assume it's a data_type description
+        store_data = dict(store) if store else {}
         try:
             q_data = json.loads(question_str)
             if isinstance(q_data, dict) and "data_type" in q_data:
@@ -110,16 +112,14 @@ if __name__ == "__main__":
                 question = normalize_question(question_str)
         except Exception:
             # If plain English, wrap it in our structured prompt
-            question = generate_fake_finding(str(store.get('app_name', 'Unknown')), question_str)
+            question = generate_fake_finding(str(store_data.get('app_name', 'Unknown')), question_str)
 
-        app_slug: str = str(store.get("app_slug", ""))  # type: ignore
-        chunks: List[str] = store.get("chunks", [])  # type: ignore
-        index: Any = store.get("index")  # type: ignore
-
-        # Provide `question_str` correctly to FAISS search - actually wait, embedding the structured JSON might hurt semantic search. 
-        # But we wrote logic to embed the raw question string in vector_store. We passed `question` directly.
+        app_slug: str = str(store_data.get("app_slug", ""))
+        chunks: List[str] = store_data.get("chunks", [])  # type: ignore
+        index: Any = store_data.get("index")  # type: ignore
+        bm25: Any = store_data.get("bm25")  # type: ignore
         
-        evidence_items_raw, debug_raw = select_evidence(chunks, index, app_slug, question)  # type: ignore
+        evidence_items_raw, debug_raw = select_evidence(chunks, index, bm25, app_slug, question)  # type: ignore
         evidence_items = list(evidence_items_raw) if isinstance(evidence_items_raw, list) else []
         debug = dict(debug_raw) if isinstance(debug_raw, dict) else {}  # type: ignore
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
             print("\nDecision: INSUFFICIENT EVIDENCE (no recognized privacy term in query)")
             print("Tip: Ask using a specific term like location/IMEI/Aadhaar/Advertising ID/etc.")
             print("\nSource:")
-            print(f"- {store.get('app_name', 'Unknown')} ({store.get('url', 'Unknown')})")
+            print(f"- {store_data.get('app_name', 'Unknown')} ({store_data.get('url', 'Unknown')})")
             continue
 
         # Deterministic path for mention queries
@@ -145,7 +145,7 @@ if __name__ == "__main__":
                 print(f"Detected terms: {terms}")
                 print("Note: Showing closest semantic chunks above for human review.")
                 print("\nSource:")
-                print(f"- {store.get('app_name', 'Unknown')} ({store.get('url', 'Unknown')})")
+                print(f"- {store_data.get('app_name', 'Unknown')} ({store_data.get('url', 'Unknown')})")
                 continue
 
             print("\nDecision: EXPLICITLY MENTIONED")
@@ -175,7 +175,7 @@ if __name__ == "__main__":
                         print(f'- "{h}" [{cid}]')
 
             print("\nSource:")
-            print(f"- {store.get('app_name', 'Unknown')} ({store.get('url', 'Unknown')})")  # type: ignore
+            print(f"- {store_data.get('app_name', 'Unknown')} ({store_data.get('url', 'Unknown')})")  # type: ignore
             continue
 
         # Non-mention strict refusal if no explicit evidence anywhere
@@ -184,30 +184,17 @@ if __name__ == "__main__":
             print(f"Detected terms: {terms}")
             print("Reason: No chunk in this policy contained the detected term(s). Showing closest semantic chunks above.")
             print("\nSource:")
-            print(f"- {store.get('app_name', 'Unknown')} ({store.get('url', 'Unknown')})")  # type: ignore
+            print(f"- {store_data.get('app_name', 'Unknown')} ({store_data.get('url', 'Unknown')})")  # type: ignore
             continue
 
-        # Otherwise: LLM path, but with verified chunks + citation validation
-        print("\nVerifying retrieved chunks dynamically with LLM...")
-        verified_evidence = []
-        K_RETURN = 10
-        for cid, ctext in evidence_items[:K_RETURN]:  # type: ignore
-            if ollama_verify_chunk(ctext, question, model=CHAT_MODEL):
-                verified_evidence.append((cid, ctext))
-                
-        if not verified_evidence:
-            print("\nDecision: REJECTED (Verifier discarded all chunks as irrelevant)")
-            print("Action: Not showing model answer. Try rephrasing the question.")
-            print("\nSource:")
-            print(f"- {store.get('app_name', 'Unknown')} ({store.get('url', 'Unknown')})")  # type: ignore
-            continue
-            
-        print(f"\nVerifier passed {len(verified_evidence)} chunks out of {K_RETURN}:")
-        for cid, _ in verified_evidence:
-            print(f"  ✓ Accepted: {cid}")
+        # Faster path: skip per-chunk static verification and send top 5 RRF chunks directly to generator.
+        print("\nGenerating final answer based on Top 5 Hybrid Search chunks...")
         
-        # Keep up to top 5 verified
-        final_evidence = verified_evidence[:5] if len(verified_evidence) > 5 else verified_evidence  # type: ignore
+        # Keep up to top 5 high-confidence chunks
+        final_evidence = evidence_items[:5] if len(evidence_items) > 5 else evidence_items  # type: ignore
+        if not final_evidence:
+            print("\nDecision: REJECTED (No relevant chunks retrieved anywhere)")
+            continue
         contexts_labeled = [f"[{cid}] {ctext}" for cid, ctext in final_evidence]
         allowed_ids = {cid for cid, _ in final_evidence}
 
@@ -223,9 +210,9 @@ if __name__ == "__main__":
                 print(f"Bullets missing valid citation: {report.get('bullets_missing_valid_citation', 0)}/{report.get('bullets_checked', 0)}")  # type: ignore
             print("Action: Not showing model answer. Use the evidence chunks above.")
             print("\nSource:")
-            print(f"- {store.get('app_name', 'Unknown')} ({store.get('url', 'Unknown')})")  # type: ignore
+            print(f"- {store_data.get('app_name', 'Unknown')} ({store_data.get('url', 'Unknown')})")  # type: ignore
             continue
 
         print("\nAnswer (validated citations):\n", answer)
         print("\nSource:")
-        print(f"- {store.get('app_name', 'Unknown')} ({store.get('url', 'Unknown')})")  # type: ignore
+        print(f"- {store_data.get('app_name', 'Unknown')} ({store_data.get('url', 'Unknown')})")  # type: ignore

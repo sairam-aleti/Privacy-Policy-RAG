@@ -80,7 +80,7 @@ def ollama_chat(contexts_labeled: List[str], finding_json: str, model: str = CHA
     return str(full_response).strip()
 
 
-def ollama_verify_chunk(chunk_text: str, finding_json: str, model: str = CHAT_MODEL, timeout: int = 60) -> bool:
+def ollama_verify_chunk(chunk_text: str, finding_json: str, model: str = CHAT_MODEL, timeout: int = 240) -> bool:
     system_msg = (
         "You are a boolean evaluator. "
         "Read the JSON Finding and identify the value of the 'data_type' key (e.g. location, aadhaar). "

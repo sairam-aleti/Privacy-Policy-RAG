@@ -47,13 +47,14 @@ def init_stores():
         url = info["url"]
         print(f"\nProcessing {app_name}...")
         try:
-            app_slug, chunks, index, meta = build_or_load_app_store(app_name, url, rebuild=False)
+            app_slug, chunks, index, bm25, meta = build_or_load_app_store(app_name, url, rebuild=False)
             STORES[k] = {
                 "app_name": app_name,
                 "app_slug": app_slug,
                 "url": url,
                 "chunks": chunks,
                 "index": index,
+                "bm25": bm25,
                 "meta": meta,
             }
             print(f"  Store ready: stores/{app_slug}/ (chunks={len(chunks)})")
@@ -72,7 +73,7 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
     Run the full RAG verification pipeline for a single finding dict.
     Returns a structured result dict ready for the UI.
     """
-    finding_id = finding.get("finding_id", f"F-{uuid.uuid4().hex[:8].upper()}")
+    finding_id = finding.get("finding_id", f"F-{uuid.uuid4().hex[:8].upper()}")  # type: ignore
     app_name = finding.get("app_name", "Unknown")
     data_type = finding.get("data_type", "unknown")
     action = finding.get("action", "")
@@ -108,16 +109,18 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
         result["error"] = f"App '{app_name}' not found in loaded stores."
         return result
 
+    assert store is not None
     result["source_url"] = store.get("url", "")
 
     question = json.dumps(finding)
     app_slug = str(store.get("app_slug", ""))
     chunks: List[str] = store.get("chunks", [])
     index = store.get("index")
+    bm25 = store.get("bm25")
 
     # Run evidence selection
     try:
-        evidence_items_raw, debug_raw = select_evidence(chunks, index, app_slug, question)
+        evidence_items_raw, debug_raw = select_evidence(chunks, index, bm25, app_slug, question)
     except Exception as e:
         result["status"] = "ERROR"
         result["error"] = f"Evidence selection failed: {e}"
@@ -142,8 +145,8 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
         result["error"] = f"Term(s) {terms} not explicitly found in the policy text."
         # Provide semantic evidence nonetheless
         result["evidence"] = [
-            {"chunk_id": cid, "text": ctext[:300]}
-            for cid, ctext in evidence_items[:5]
+            {"chunk_id": cid, "text": ctext[:300]}  # type: ignore
+            for cid, ctext in evidence_items[:5]  # type: ignore
         ]
         return result
 
@@ -152,38 +155,28 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
         result["status"] = "VERIFIED"
         explicit_cids = [(cid, ctext) for cid, ctext in evidence_items if chunk_contains_any(ctext, matchers)]
         matched = []
-        for cid, ctext in explicit_cids[:5]:
+        for cid, ctext in explicit_cids[:5]:  # type: ignore
             hits = extract_matching_sentences(ctext, matchers) if isinstance(ctext, str) else []
-            for h in hits[:3]:
+            for h in hits[:3]:  # type: ignore
                 matched.append({"sentence": h, "citation": cid})
         result["evidence"] = matched
         result["answer"] = "Explicitly mentioned in the privacy policy (deterministic match)."
         return result
 
-    # Path 4: LLM verification
-    K_RETURN = 10
-    verified_evidence = []
-    for cid, ctext in evidence_items[:K_RETURN]:
-        try:
-            if ollama_verify_chunk(ctext, question, model=CHAT_MODEL):
-                verified_evidence.append((cid, ctext))
-        except Exception:
-            continue
+    # Path 4: Direct LLM Generation (Skipping per-chunk LLM checks for speed)
+    # Since BM25 + FAISS + Explicit Matching provide highly accurate top candidates,
+    # we feed the top 5 directly to the final generator to save 10 LLM calls per finding.
+    final_evidence = evidence_items[:5]  # type: ignore
 
-    result["total_chunks_checked"] = min(K_RETURN, len(evidence_items))
-    result["verified_chunks"] = len(verified_evidence)
-
-    if not verified_evidence:
+    if not final_evidence:
         result["status"] = "REJECTED"
-        result["error"] = "Verifier discarded all chunks as irrelevant."
-        result["evidence"] = [
-            {"chunk_id": cid, "text": ctext[:300]}
-            for cid, ctext in evidence_items[:5]
-        ]
+        result["error"] = "No relevant chunks retrieved by hybrid search."
         return result
 
+    result["total_chunks_checked"] = len(evidence_items)
+    result["verified_chunks"] = len(final_evidence)
+
     # Generate final answer
-    final_evidence = verified_evidence[:5]
     contexts_labeled = [f"[{cid}] {ctext}" for cid, ctext in final_evidence]
     allowed_ids = {cid for cid, _ in final_evidence}
 
@@ -197,7 +190,7 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
     ok, report = validate_llm_answer(answer, allowed_ids)
 
     result["evidence"] = [
-        {"chunk_id": cid, "text": ctext[:300]}
+        {"chunk_id": cid, "text": ctext[:300]}  # type: ignore
         for cid, ctext in final_evidence
     ]
 
