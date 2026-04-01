@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Verification stats
         let statsHtml = "";
         if (result.verified_chunks !== undefined && result.total_chunks_checked) {
-            statsHtml = `<span class="tag">✓ ${result.verified_chunks}/${result.total_chunks_checked} chunks verified</span>`;
+            statsHtml = `<span class="tag" style="color: var(--amber);">⚡ Hybrid RRF Search</span> <span class="tag">✓ Top ${result.verified_chunks} context chunks analyzed</span>`;
         }
 
         // Evidence
@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ).join("");
             evidenceHtml = `
                 <button class="evidence-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
-                    ▸ View ${result.evidence.length} evidence chunk${result.evidence.length > 1 ? 's' : ''}
+                    ▸ View the AI's sourced evidence (${result.evidence.length} citations)
                 </button>
                 <div class="evidence-panel">${items}</div>
             `;
