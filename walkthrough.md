@@ -1,10 +1,20 @@
-# Privacy Policy RAG — Web UI Walkthrough
+# Privacy Policy RAG — Web UI & Data Refinement Walkthrough
 
 ## What Changed
 
 ### 1. Model Upgrade
-- Upgraded from `llama3.2:3b` (3B params) to `llama3:8b` (8B params) in [llm.py](file:///e:/Privacy%20Policy%20RAG/core/llm.py)
-- Dramatically improves citation formatting, instruction adherence, and reasoning depth
+- Upgraded from `llama3.2:3b` (3B params) to `llama3:8b` (8B params) in [llm.py](file:///home/apf/Privacy-Policy-RAG/core/llm.py)
+- Dramatically improves citation formatting, instruction adherence, and reasoning depth for complex scenarios.
+
+### 2. Contextual Data Constraints (JSONL Refinement)
+- We migrated the testing data from acting like a "cheat sheet" to acting as strict LLM verification constraints. 
+- Discrepancies and side-notes were stripped out. Instead, each finding now includes a `collection_context` (e.g. "Only at payment time") and an exact `destination` network endpoint.
+- The internal LLM prompt in `llm.py` was explicitly updated to command `llama3:8b` to verify if the scraped text supports the *contextual restriction* specified.
+
+### 3. Premium Dashboard UI
+- Converted the minimalist theme into an animated, state-of-the-art glassmorphism design.
+- The background now smoothly transitions between deep espresso, glowing violet, and warm amber highlights.
+- Cards feature intensified backdrop-blurs, glowing borders, and silky micro-interactions.
 
 ### 2. Flask Web Server
 - Created [server.py](file:///e:/Privacy%20Policy%20RAG/server.py) — replaces the terminal CLI entirely

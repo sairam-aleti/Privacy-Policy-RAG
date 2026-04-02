@@ -6,7 +6,7 @@ OLLAMA_EMBED_URL = "http://localhost:11434/api/embeddings"
 OLLAMA_CHAT_URL = "http://localhost:11434/api/chat"
 
 EMBED_MODEL = "nomic-embed-text"
-CHAT_MODEL = "llama3.2:3b"
+CHAT_MODEL = "llama3:8b"
 
 
 def ollama_embed(texts: List[str], model: str = EMBED_MODEL, timeout: int = 120) -> List[List[float]]:
@@ -33,10 +33,10 @@ def ollama_chat(contexts_labeled: List[str], finding_json: str, model: str = CHA
         "You are a strict privacy-policy auditor verifying a specific finding.\n"
         "Rules:\n"
         "1) Use ONLY the provided Context. Do NOT use outside knowledge.\n"
-        "2) Read the provided JSON Finding and explicitly identify the value of the 'data_type' key (e.g., location, internet activity).\n"
-        "3) Report what the Context says regarding that specific data type being collected or shared.\n"
+        "2) Read the provided JSON Finding and identify the 'data_type' AND 'collection_context'.\n"
+        "3) Evaluate whether the provided policy Context legally permits the collection of this data_type specifically within that collection_context.\n"
         "4) Return 2-6 bullet points explaining the evidence found. Each bullet MUST end with one or more citations to chunk IDs exactly as they appear in the Context.\n"
-        "    Example bullet point: Location data is retrieved and collected [paytm#C11].\n"
+        "    Example bullet point: Location data is strictly collected during checkout [paytm#C11].\n"
         "5) Do NOT claim 'X not found in policy'. Only speak about what is present in Context.\n"
         "6) Do NOT invent citation IDs. NEVER use the 'finding_id' as a citation.\n"
     )

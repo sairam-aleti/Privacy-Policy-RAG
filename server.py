@@ -139,17 +139,7 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
         result["error"] = "No recognized privacy term detected in the data_type."
         return result
 
-    # Path 2: Term recognized but not found in text
-    if terms and not debug.get("explicit_found_anywhere"):
-        result["status"] = "NOT_FOUND"
-        result["error"] = f"Term(s) {terms} not explicitly found in the policy text."
-        # Provide semantic evidence nonetheless
-        result["evidence"] = [
-            {"chunk_id": cid, "text": ctext[:300]}  # type: ignore
-            for cid, ctext in evidence_items[:5]  # type: ignore
-        ]
-        return result
-
+    # Path 2 has been removed to allow the LLM to semantically verify FAISS chunks (e.g. "whereabouts" = "location")
     # Path 3 (mention query): Deterministic match
     if is_mention_query(question):
         result["status"] = "VERIFIED"

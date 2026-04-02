@@ -6,7 +6,7 @@ from .llm import ollama_embed, EMBED_MODEL  # type: ignore
 from .vector_store import search_index  # type: ignore
 
 PRIVACY_TERMS = {
-    "location": ["location", "gps", "geolocation", "precise location", "lat", "lon", "latitude", "longitude"],
+    "location": ["location", "gps", "geolocation", "precise location", "lat", "lon", "latitude", "longitude", "geographical area", "state", "city"],
     "imei": ["imei"],
     "aadhaar": ["aadhaar", "aadhar"],
     "advertising_id": ["advertising id", "ad id", "aaid", "google advertising id"],
@@ -20,14 +20,14 @@ PRIVACY_TERMS = {
     "microphone": ["microphone", "mic"],
     "email": ["email", "email id", "e-mail"],
     "phone_number": ["phone number", "mobile number", "phone"],
-    "name": ["name"],
+    "name": ["name", "username"],
     "age": ["age", "date of birth", "dob"],
     "sex": ["sex", "gender"],
     "profession": ["profession", "occupation"],
-    "payment": ["payment", "card", "credit card", "debit card", "upi", "bank", "account number"],
+    "payment": ["payment", "card", "credit card", "debit card", "upi", "bank", "account number", "wallet", "wallet address", "balance", "withdrawals", "investment", "transaction history", "ifsc"],
     "health": ["health", "medical", "diagnosis", "treatment"],
     "cookies": ["cookie", "cookies"],
-    "device_info": ["device info", "device information", "mobile device information", "device details"],
+    "device_info": ["device info", "device information", "mobile device information", "device details", "os build", "proxy"],
 }
 
 MENTION_TRIGGERS = [

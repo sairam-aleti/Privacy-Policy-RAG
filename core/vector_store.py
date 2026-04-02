@@ -9,7 +9,7 @@ from typing import List, Tuple, Dict, Any
 import pickle
 from rank_bm25 import BM25Okapi  # type: ignore
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter  # type: ignore
+from langchain_text_splitters import RecursiveCharacterTextSplitter  # type: ignore
 from .llm import ollama_embed, EMBED_MODEL, CHAT_MODEL  # type: ignore
 from .scraper import extract_text_from_website  # type: ignore
 

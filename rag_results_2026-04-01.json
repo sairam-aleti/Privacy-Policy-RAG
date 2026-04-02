@@ -1,0 +1,500 @@
+[
+  {
+    "action": "data collection",
+    "answer": "After reviewing the provided Context, I found that the data type being collected is:\n\n* Phone number [paytm#C11]\n\nThe evidence supporting this finding can be summarized as follows:\n\n* Paytm collects mobile device information, which includes communication information including phone number [paytm#C11].\n* The purpose of collecting phone numbers is not explicitly stated in the provided Context, but it is possible that the collected data is used to facilitate transactions or report on these transactions [paytm#C14].\n* Paytm does not collect personal data via cookies and other tracking technology, but if you previously provided personal data, cookies may be tied to such data [paytm#C22].\n* The collected phone number data is shared with third-party personnel, affiliates, or subsidiaries only on a \"need-to-know\" basis [paytm#C22].",
+    "app_name": "PayTM",
+    "data_type": "phone number",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "paytm#C30",
+        "text": ". The latest version can be found at https://paytm.com/company/terms-and-conditions . Please check the “Document Last updated” legend at the top of this page to see when this Privacy Statement was last updated. In case of any significant changes, we will notify you via email or display a notice on o"
+      },
+      {
+        "chunk_id": "paytm#C11",
+        "text": ". vi. Surveys- Opinions provided by you to us by way of feedback or responses to surveys. vii. Mobile Device Information- Information obtained from your mobile device by way of using the Paytm application, like device location, communication information including phone number, SIM Serial Number, con"
+      },
+      {
+        "chunk_id": "paytm#C14",
+        "text": ". To process the data for the specified purposes for which it was provided to us voluntarily. For example, if you make a purchase and request a receipt from us, Paytm may process your Personal Data for that purpose. ii. To facilitate the transactions or report on these transactions. iii. To undertak"
+      },
+      {
+        "chunk_id": "paytm#C22",
+        "text": ". We do not collect any Personal Data via cookies and other tracking technology, however, if you previously provided Personal Data, cookies may be tied to such data. 7. DOES PAYTM SHARE PERSONAL DATA WITH THIRD PARTIES/ SUBSIDIARIES/AFFILIATES? We only share the data on a “need-to-know” basis to des"
+      },
+      {
+        "chunk_id": "paytm#C25",
+        "text": ". 9. HOW DOES PAYTM KEEP YOUR PERSONAL DATA SAFE? Paytm takes reasonable security safeguards to protect your Personal Data from misuse, loss, unauthorised access, modification, or disclosure and uses the latest secure server layers encryption and access control on its systems. Among the other things"
+      }
+    ],
+    "finding_id": "F-PAYTM-001",
+    "purpose": "Collected visibly during MITM proxy on login",
+    "source_url": "https://paytm.com/company/terms-and-conditions?company=one97&tab=privacy",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "PayTM",
+    "data_type": "password",
+    "destination": "first party server",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-PAYTM-002",
+    "purpose": "Collected visibly during MITM proxy on login",
+    "source_url": "https://paytm.com/company/terms-and-conditions?company=one97&tab=privacy",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "Based on the provided Context, the value of the 'data_type' key is \"account number\".\n\nThe Context does not explicitly mention account numbers being collected or shared. However, it provides some information related to data collection and processing.\n\nHere are two bullet points explaining the evidence found:\n\n* Paytm collects Personal Data only to the extent necessary to process requirements [paytm#C6]. No specific mention is made about account numbers.\n* The purpose of collecting banking details was observed in plaintext, which is done for legitimate uses in Paytm's business activities for providing products or services [no specific citation].\n\nNote that there is no direct evidence found regarding the collection or sharing of account numbers.",
+    "app_name": "PayTM",
+    "data_type": "account number",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "paytm#C25",
+        "text": ". 9. HOW DOES PAYTM KEEP YOUR PERSONAL DATA SAFE? Paytm takes reasonable security safeguards to protect your Personal Data from misuse, loss, unauthorised access, modification, or disclosure and uses the latest secure server layers encryption and access control on its systems. Among the other things"
+      },
+      {
+        "chunk_id": "paytm#C23",
+        "text": ". For example, when you make purchases through the Paytm Platform, Paytm may collect and store information about you to process your requests and auto populate forms for future transactions. This information may be shared with third parties which assist in processing and fulfilling your requests, in"
+      },
+      {
+        "chunk_id": "paytm#C13",
+        "text": ". ix. Other access- Access to Wi-Fi details through SSID information from your device, to notify users about the security of Wi-Fi network. Access to the Near field Communication (NFC) chip on device to enable tap to pay functionality. 4. HOW DOES PAYTM PROCESS YOUR PERSONAL DATA? Paytm processes yo"
+      },
+      {
+        "chunk_id": "paytm#C6",
+        "text": ". By using our products or services, you agree to this Privacy Statement and provide your free, specific, informed, unambiguous and unconditional consent to the practices described in this Privacy Statement. Paytm collects your Personal Data only to the extent necessary to process your requirements,"
+      },
+      {
+        "chunk_id": "paytm#C21",
+        "text": ". Paytm does not engage in tracking, behavioural monitoring or targeted advertising concerning children’s Personal Data. 6. DOES PAYTM USE COOKIES AND OTHER TRACKING TECHNOLOGIES? Paytm may use cookies and other tracking technology depending on the features offered, to enhance your experience, analy"
+      }
+    ],
+    "finding_id": "F-PAYTM-003",
+    "purpose": "Banking details observed in plaintext",
+    "source_url": "https://paytm.com/company/terms-and-conditions?company=one97&tab=privacy",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "PayTM",
+    "data_type": "IFSC code",
+    "destination": "first party server",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-PAYTM-004",
+    "purpose": "Banking integration details",
+    "source_url": "https://paytm.com/company/terms-and-conditions?company=one97&tab=privacy",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "PayTM",
+    "data_type": "otp",
+    "destination": "first party server",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-PAYTM-005",
+    "purpose": "Intercepted OTP during transaction",
+    "source_url": "https://paytm.com/company/terms-and-conditions?company=one97&tab=privacy",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "Based on the provided Context, the value of the 'data_type' key is \"phone number\".\n\nThe Context states that phone number is one of the pieces of information asked to be provided for Google Payments services [google_pay#C6]. Additionally, it is mentioned as part of the information that may include your name, profile image, email, Internet protocol (IP) address, billing address, and location, among other details [google_pay#C25].\n\nThe evidence found suggests:\n\n• Phone number is one of the types of information required for Google Payments services [google_pay#C6].\n• Phone number is part of the comprehensive list of information that may be collected or shared [google_pay#C25].\n• The phone number will be visible in plain text during transaction [finding_id: F-GOOGLEPAY-001].\n\nNote: The Context does not specify whether the phone number will be collected or shared with specific parties, but it is clear that it is one of the types of information that may be processed by Google Pay.",
+    "app_name": "Google Pay",
+    "data_type": "phone number",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "google_pay#C6",
+        "text": ". Depending on the Google Payments services you use, in addition to the information listed in the Google Privacy Policy, you may be asked to provide information, such as: Credit or debit card number and card expiry date Bank account number and expiry date Address Phone number Date of birth National "
+      },
+      {
+        "chunk_id": "google_pay#C25",
+        "text": ". The information may include your name, profile image, email, Internet protocol (IP) address, billing address, phone number, device information, location, and Google Account activity information Where Google Pay is available, to ensure a smoother experience and present you with relevant payment opt"
+      },
+      {
+        "chunk_id": "google_pay#C19",
+        "text": "a service provided by a third party Where Google Pay is available, to inform a third-party merchant, whose site or app you visit, whether you have a Google payments profile that can be used to make payments through that merchant's site or app"
+      },
+      {
+        "chunk_id": "google_pay#C26",
+        "text": ".  In this process, Google may share limited details about your payment method, such as the card network and last 4 digits of your card number, solely to help you identify your chosen payment method When you transact with a third party (like merchants and payment service providers), we may send frau"
+      },
+      {
+        "chunk_id": "google_pay#C5",
+        "text": "apply to the Google Pay service provided to users resident in India by Google India Digital Services Private Limited Information we collect In addition to the information listed in the Google Privacy Policy , we may also collect the following: Registration information When you sign up for Google Pay"
+      }
+    ],
+    "finding_id": "F-GOOGLEPAY-001",
+    "purpose": "Visible in plain text during transaction",
+    "source_url": "https://payments.google.com/payments/apis-secure/u/0/get_legal_document?ldo=0&ldt=privacynotice&ldl=en",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "Google Pay",
+    "data_type": "account pin",
+    "destination": "first party server",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-GOOGLEPAY-002",
+    "purpose": "Visible in plain text on mitm proxy",
+    "source_url": "https://payments.google.com/payments/apis-secure/u/0/get_legal_document?ldo=0&ldt=privacynotice&ldl=en",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "Mobikwik",
+    "data_type": "phone number",
+    "destination": "first party server",
+    "error": "Term(s) ['contacts', 'phone_number'] not explicitly found in the policy text.",
+    "evidence": [
+      {
+        "chunk_id": "mobikwik#C-1",
+        "text": "Online Mobile & DTH Recharge, Bill Payments, Easy Recharge button MobiKwik This website requires JavaScript."
+      },
+      {
+        "chunk_id": "mobikwik#C0",
+        "text": "Online Mobile & DTH Recharge, Bill Payments, Easy Recharge button MobiKwik This website requires JavaScript."
+      }
+    ],
+    "finding_id": "F-MOBIKWIK-001",
+    "purpose": "Captured on login",
+    "source_url": "https://www.mobikwik.com/privacypolicy",
+    "status": "NOT_FOUND",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "Mobikwik",
+    "data_type": "otp",
+    "destination": "first party server",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-MOBIKWIK-002",
+    "purpose": "Captured on login alongside phone number",
+    "source_url": "https://www.mobikwik.com/privacypolicy",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data sharing",
+    "answer": "",
+    "app_name": "Mobikwik",
+    "data_type": "device type and os build",
+    "destination": "analytics endpoint",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-MOBIKWIK-003",
+    "purpose": "Device tracking missing from certain policy sections",
+    "source_url": "https://www.mobikwik.com/privacypolicy",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "The 'data_type' key in the JSON Finding is \"username\".\n\nAccording to the provided Context, there is no explicit mention of username collection or sharing. However, it can be inferred that Freecharge may collect \"Non-Personal Information\" through cookies [freecharge#C32]. This non-personal information does not necessarily include usernames.\n\nHere are some bullet points explaining the evidence found:\n\n• The policy mentions collecting and sharing Personal Information/Sensitive Information under certain circumstances [freecharge#C64], but it is unclear if this includes username data.\n• Freecharge may store temporary or permanent cookies on users' computers, which can be used to collect non-personal information [freecharge#C32].\n• There is no direct mention of username collection or sharing in the provided Context.",
+    "app_name": "Freecharge",
+    "data_type": "username",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "freecharge#C197",
+        "text": "sending an email to care@freecharge.in. or reaching out to us through the Help and Support section. Please include\n                                            the transaction details such as the biller name, account number/mobile\n                                            number, payment value, tra"
+      },
+      {
+        "chunk_id": "freecharge#C311",
+        "text": "you. For all purposes hereof, you hereby grant us a limited powers and\n                                            hereby authorize us with the full power of substitution and re-substitution,\n                                            for you and in your name, place and stead, in any and all capaci"
+      },
+      {
+        "chunk_id": "freecharge#C32",
+        "text": "detection and to offer\n                                                personalised financial products. Non-Personal Information is collected through various ways such through as\n                                            the use of\n                                            cookies. Freecharge ma"
+      },
+      {
+        "chunk_id": "freecharge#C64",
+        "text": "/ Banks and Financial Institutions for one or more of the Purposes,\n                                            government\n                                            agencies upon directions of such agency, or to any other third party as may\n                                            be\n          "
+      },
+      {
+        "chunk_id": "freecharge#C104",
+        "text": "business data, and historical information under the account. You will not be able to use FREECHARGE services. If you wish to create an account with the same mobile number and/or\n                                                    email id,\n                                                    through "
+      }
+    ],
+    "finding_id": "F-FREECHARGE-001",
+    "purpose": "Visible as plain text in mitmproxy",
+    "source_url": "https://www.freecharge.in/termsandconditions",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "According to the provided Context, the value of the 'data_type' key is \"phone number\".\n\nRegarding the collection of phone numbers:\n\n* Phone numbers are not explicitly mentioned as being collected or shared in the policy. However, it is mentioned that Megha Khatri, the designated grievance officer, can be contacted via phone at 9773840200 [freecharge#C209].\n* The policy does state that Freecharge may store temporary or permanent 'cookies' on Your computer, which could potentially include phone number-related information [freecharge#C32].\n* The purpose of collecting phone numbers is not explicitly stated in the policy, but it is mentioned that phone numbers are used for detection and to offer personalized financial products [freecharge#C32].\n\nNo explicit mention of sharing phone numbers with government agencies or other third parties was found in the Context. However, it is mentioned that Freecharge may share Personal Information/Sensitive Information (which includes phone numbers) with Banks and Financial Institutions, government agencies upon directions of such agency, or to any other third party as may be required under applicable law [freecharge#C64].",
+    "app_name": "Freecharge",
+    "data_type": "phone number",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "freecharge#C209",
+        "text": "Information/documentation) for resolution/response. Megha Khatri, the designated grievance officer Phone: 9773840200 Email: grievanceofficer@freecharge.com Working Hours: 9:30 AM to 6:30 PM (Monday-Friday;\n                                                    except bank holidays) Postal: Freecharge P"
+      },
+      {
+        "chunk_id": "freecharge#C104",
+        "text": "business data, and historical information under the account. You will not be able to use FREECHARGE services. If you wish to create an account with the same mobile number and/or\n                                                    email id,\n                                                    through "
+      },
+      {
+        "chunk_id": "freecharge#C64",
+        "text": "/ Banks and Financial Institutions for one or more of the Purposes,\n                                            government\n                                            agencies upon directions of such agency, or to any other third party as may\n                                            be\n          "
+      },
+      {
+        "chunk_id": "freecharge#C92",
+        "text": "Information to any third party (including any third party websites, even if\n                                            links to such\n                                            third party websites are provided on the Website). Notwithstanding anything contained in this Policy or elsewhere, to the\n"
+      },
+      {
+        "chunk_id": "freecharge#C32",
+        "text": "detection and to offer\n                                                personalised financial products. Non-Personal Information is collected through various ways such through as\n                                            the use of\n                                            cookies. Freecharge ma"
+      }
+    ],
+    "finding_id": "F-FREECHARGE-002",
+    "purpose": "Visible as plain text in mitmproxy",
+    "source_url": "https://www.freecharge.in/termsandconditions",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "Freecharge",
+    "data_type": "password",
+    "destination": "first party server",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-FREECHARGE-003",
+    "purpose": "Password visible in plaintext when creating new account",
+    "source_url": "https://www.freecharge.in/termsandconditions",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "Freecharge",
+    "data_type": "otp",
+    "destination": "first party server",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-FREECHARGE-004",
+    "purpose": "OTP visible on login",
+    "source_url": "https://www.freecharge.in/termsandconditions",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "The value of the 'data_type' key is \"phone number and OTP\".\n\nAccording to the Context, phone numbers are mentioned as part of the information collected [coindcx#C34]. This includes your phone contacts [coindcx#C34].\n\nAdditionally, One-Time Passwords (OTPs) are also explicitly listed as part of the data collection [JSON Finding: {\"data_type\": \"phone number and OTP\"}].\n\nAs per the Context, CoinDCX may collect information for authentication purposes [coindcx#C10]. The policy mentions that phone numbers are used along with other details for login and authentication processes [coindcx#C34].\n\nThe data collected is stored on first-party servers [JSON Finding: {\"destination\": \"first party server\"}] for the purpose of authentication details [JSON Finding: {\"purpose\": \"Authentication details\"}].",
+    "app_name": "CoinDCX",
+    "data_type": "phone number and otp",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "coindcx#C34",
+        "text": ". Internet protocol (IP) address, your login information, browser details, time zone setting, browser plug-in types and versions, operating system and platform and other similar information. Access to your apps and services including messaging through SMS, storage data, device details, camera access"
+      },
+      {
+        "chunk_id": "coindcx#C18",
+        "text": ". Personal Data includes both directly identifiable information, such as name, identification number or unique job title, and indirectly identifiable information such as date of birth, unique mobile or wearable device identifier, information that could be used to identify a household, telephone numb"
+      },
+      {
+        "chunk_id": "coindcx#C41",
+        "text": ". We may also collect and receive information in an aggregated form from different browser types for analysis. If applicable and in order to automate input Transaction ID/ Reference/UTR number linked with Your deposit to the Company, we will need access to your SMSs, for our systems to be able to re"
+      },
+      {
+        "chunk_id": "coindcx#C39",
+        "text": ". This includes, without limitation, information from public databases, credit bureaus, KYC verification partners, resellers and channel partners, joint marketing partners, and social media platforms. We may combine and process such data internally towards our Services"
+      },
+      {
+        "chunk_id": "coindcx#C10",
+        "text": ". VA00030982, offers various products and services (either directly or licensed from and/or procured through the Company’s affiliates, group companies, licensees and/or partner entities) to certain users through our website www.coindcx.com and the associated mobile and software applications. This po"
+      }
+    ],
+    "finding_id": "F-COINDCX-001",
+    "purpose": "Authentication details",
+    "source_url": "https://coindcx.com/legal/privacy-policy-coindcx/",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "Based on the provided Context, the 'data_type' is \"PAN Card and Aadhaar Card Number\".\n\nAccording to the Context, PAN card and Aadhaar card numbers are considered sensitive personal data or information [coindcx#C19](i), which consists of financial information such as bank account or credit card or debit card or other payment instrument details.\n\nHere's what the Context says about PAN card and Aadhaar card numbers being collected or shared:\n\n* PAN card and Aadhaar card numbers are used for the purposes of enabling and effecting transactions on the Online Platforms [coindcx#C29].\n* This information is considered sensitive personal data or information, which consists of financial information such as bank account or credit card or debit card or other payment instrument details [coindcx#C19](i).\n* The PAN card and Aadhaar card numbers are collected for KYC identity verification purposes [JSON Finding's \"purpose\" field].\n\nIn summary:\n\n• PAN card and Aadhaar card numbers are used for transactions on the Online Platforms [coindcx#C29].\n• This information is considered sensitive personal data or information [coindcx#C19](i).\n• The PAN card and Aadhaar card numbers are collected for KYC identity verification purposes [JSON Finding's \"purpose\" field].",
+    "app_name": "CoinDCX",
+    "data_type": "pan card and aadhar card number",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "coindcx#C29",
+        "text": ". Financial Data – bank account details, permanent account number, credit or debit card number, transaction history, credit history, trading data, UPI, tax identification details, your status on any sanctions lists / blacklists / defaulter lists maintained by public authorities or authorised bureaus"
+      },
+      {
+        "chunk_id": "coindcx#C27",
+        "text": ". National Identifiers – Any government issued identity card details, is used for the purposes of mapping your identity with the profile so created and registered with, by you. Correspondence Details – e-mail address, phone number, postal address, etc., which are used for the purposes of communicati"
+      },
+      {
+        "chunk_id": "coindcx#C39",
+        "text": ". This includes, without limitation, information from public databases, credit bureaus, KYC verification partners, resellers and channel partners, joint marketing partners, and social media platforms. We may combine and process such data internally towards our Services"
+      },
+      {
+        "chunk_id": "coindcx#C10",
+        "text": ". VA00030982, offers various products and services (either directly or licensed from and/or procured through the Company’s affiliates, group companies, licensees and/or partner entities) to certain users through our website www.coindcx.com and the associated mobile and software applications. This po"
+      },
+      {
+        "chunk_id": "coindcx#C19",
+        "text": ". “ Sensitive Personal Data or Information ” with respect to a person shall mean such personal information which consists of information relating to: (i) biometric information; (ii) financial information such as bank account or credit card or debit card or other payment instrument details; (iii) med"
+      }
+    ],
+    "finding_id": "F-COINDCX-002",
+    "purpose": "KYC identity verification",
+    "source_url": "https://coindcx.com/legal/privacy-policy-coindcx/",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "Based on the provided Context, I found that:\n\n* Bank account information is considered sensitive personal data or information [coindcx#C19](i).\n* The collection of financial information, including bank account details, is mentioned as part of the \"Financial Data\" category [coindcx#C29].\n* The policy also mentions collecting and storing bank account details for the purpose of enabling transactions on online platforms [coindcx#C29].\n* CoinDCX collects Uniform Resource Locators (URL) clickstream with timestamp; transactions and trades executed or attempted to be executed by you, which may include information about bank accounts or financial transactions [coindcx#C35].\n\nTherefore, I conclude that the data type \"bank account number and ifsc code\" is being collected and stored for the purpose of enabling transactions on online platforms.\n\nEvidence found:\n\n* Bank account information is considered sensitive personal data or information [coindcx#C19](i).\n* Financial information, including bank account details, is collected and stored for transactional purposes [coindcx#C29].\n* CoinDCX collects URL clickstream with timestamp, which may include information about bank accounts or financial transactions [coindcx#C35].",
+    "app_name": "CoinDCX",
+    "data_type": "bank account number and ifsc code",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "coindcx#C29",
+        "text": ". Financial Data – bank account details, permanent account number, credit or debit card number, transaction history, credit history, trading data, UPI, tax identification details, your status on any sanctions lists / blacklists / defaulter lists maintained by public authorities or authorised bureaus"
+      },
+      {
+        "chunk_id": "coindcx#C19",
+        "text": ". “ Sensitive Personal Data or Information ” with respect to a person shall mean such personal information which consists of information relating to: (i) biometric information; (ii) financial information such as bank account or credit card or debit card or other payment instrument details; (iii) med"
+      },
+      {
+        "chunk_id": "coindcx#C6",
+        "text": "doors to new crypto listings Ventures VC fund to support web3 & blockchain startups Affiliate Bring your network on CoinDCX & earn special bonuses Business Partner Invite your clients to trade on CoinDCX and earn a share of their trading fees Support About us Create Account Login Logout Create Accou"
+      },
+      {
+        "chunk_id": "coindcx#C41",
+        "text": ". We may also collect and receive information in an aggregated form from different browser types for analysis. If applicable and in order to automate input Transaction ID/ Reference/UTR number linked with Your deposit to the Company, we will need access to your SMSs, for our systems to be able to re"
+      },
+      {
+        "chunk_id": "coindcx#C35",
+        "text": ". Information about your visit: Uniform Resource Locators (URL) clickstream with timestamp; transactions and trades executed or attempted to be executed by you; viewed and searched items; page response times, download errors, length of visits to certain pages, page interaction information (such as s"
+      }
+    ],
+    "finding_id": "F-COINDCX-003",
+    "purpose": "Stored bank details",
+    "source_url": "https://coindcx.com/legal/privacy-policy-coindcx/",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "BSES Rajdhani",
+    "data_type": "ca number",
+    "destination": "first party server",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-BSES-001",
+    "purpose": "CA number visible in plain text",
+    "source_url": "https://www.bsesdelhi.com/web/brpl/privacy-policy",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "",
+    "app_name": "BSES Rajdhani",
+    "data_type": "password",
+    "destination": "first party server",
+    "error": "No recognized privacy term detected in the data_type.",
+    "evidence": [],
+    "finding_id": "F-BSES-002",
+    "purpose": "Password visible in plain text",
+    "source_url": "https://www.bsesdelhi.com/web/brpl/privacy-policy",
+    "status": "INSUFFICIENT",
+    "total_chunks_checked": 0,
+    "verified_chunks": 0
+  },
+  {
+    "action": "data collection",
+    "answer": "The value of the 'data_type' key is \"phone number\".\n\nAccording to the Context, there is no explicit mention of collecting or sharing phone numbers. However, it does discuss the collection and storage of other sensitive information such as:\n\n* Mobile number for creation of Ayushman Bharat Health Account (ABHA) [aarogya_setu#C9]\n* Aadhaar Number for verification purposes [aarogya_setu#C10]\n\nThere is no mention of phone numbers being collected or shared, but it's important to note that the Context does discuss the collection and storage of mobile numbers and Aadhaar Numbers.\n\nBullet points explaining the evidence found:\n\n• Mobile number is collected for creation of Ayushman Bharat Health Account (ABHA) [aarogya_setu#C9].",
+    "app_name": "Aarogya Setu",
+    "data_type": "phone number",
+    "destination": "first party server",
+    "error": null,
+    "evidence": [
+      {
+        "chunk_id": "aarogya_setu#C1",
+        "text": ". However, the app still shares COVID statistics/updates/guidelines and facilitate in downloading COVID-19 Vaccination Certificates. It also displays user status as “You are COVID-19 positive”, if patient’s mobile number given in ICMR database matches with registered mobile number of Aarogya Setu"
+      },
+      {
+        "chunk_id": "aarogya_setu#C9",
+        "text": "ABHA number. If you opt for creation of Ayushman Bharat Health Account (ABHA) through Aarogya Setu,\n              the App shall seek your consent to collect your name, age, date of birth, gender,\n              mobile number and Aadhar number for the purpose of creation of the ABHA. The\n             "
+      },
+      {
+        "chunk_id": "aarogya_setu#C11",
+        "text": "facility. A valid Aarogya Setu user having ABHA Number will be able to create ABHA number and\n              ABHA address for others in assisted mode. Creation of Longitudinal health record The ABHA will facilitate the user to link his/her health record with the ABHA account,\n              thus creat"
+      },
+      {
+        "chunk_id": "aarogya_setu#C10",
+        "text": "processed with your consent. The App shall facilitate the verification of your identity using your Aadhaar Number\n              which will only be used for the purpose of the creation of your ABHA. Your Aadhaar\n              number shall not be stored by the App. The App will make it possible for yo"
+      },
+      {
+        "chunk_id": "aarogya_setu#C7",
+        "text": "ABHA (Ayushman Bharat Health Account) Address as a unique identifier (self-declared\n              username) that enables you to share and access your health records digitally. ABHA\n              number is a 14-digit number that will uniquely identify you as a participant in\n              India’s dig"
+      }
+    ],
+    "finding_id": "F-AAROGYA-001",
+    "purpose": "Able to see phone number in plain text with proxy",
+    "source_url": "https://web.swaraksha.gov.in/ncv19/privacy/",
+    "status": "VERIFIED",
+    "total_chunks_checked": 10,
+    "verified_chunks": 5
+  }
+]

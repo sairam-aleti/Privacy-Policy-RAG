@@ -1,0 +1,11 @@
+beautifulsoup4==4.13.4
+faiss-cpu>=1.9.0
+numpy==1.26.4
+requests==2.32.3
+openai==1.76.2
+pydantic==2.11.4
+pymupdf==1.25.5
+tqdm==4.67.1
+Flask>=3.0.0
+rank-bm25==0.2.2
+langchain
