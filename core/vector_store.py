@@ -115,50 +115,12 @@ def build_or_load_app_store(app_name: str, url: str, rebuild: bool = False) -> T
     app_slug = slugify(app_name)
     ensure_dir(STORE_ROOT)
     ensure_dir(app_store_dir(app_slug))
-
-    text, source_type = extract_text_from_website(url)
-    if not text:
-        raise RuntimeError(f"No text extracted for {app_name} ({url}).")
-
-    fingerprint = compute_text_fingerprint(text)
-
-    if not rebuild:
-        try:
-            chunks_existing, index_existing, bm25_existing, meta_existing = load_app_store(app_slug)
-            if meta_existing.get("fingerprint") == fingerprint:
-                return app_slug, chunks_existing, index_existing, bm25_existing, meta_existing
-            else:
-                print(f"Policy text changed for {app_name} -> rebuilding index.")
-        except Exception:
-            pass
-
-    chunks = chunk_text(text)
-    print(f"  Chunks for {app_name}: {len(chunks)} (source={source_type})")
-    print(f"  Embedding chunks for {app_name}...")
-
-    embeddings = ollama_embed(chunks, model=EMBED_MODEL)
-    embeddings, chunks = filter_embeddings_and_chunks(embeddings, chunks)
-    index = create_faiss_index(embeddings)
     
-    # Build BM25
-    tokenized_corpus = [c.lower().split() for c in chunks]
-    bm25 = BM25Okapi(tokenized_corpus)
-
-    meta = {
-        "app_name": app_name,
-        "app_slug": app_slug,
-        "url": url,
-        "source_type": source_type,
-        "fingerprint": fingerprint,
-        "chunk_size": 500,
-        "chunk_overlap": 50,
-        "embed_model": EMBED_MODEL,
-        "chat_model": CHAT_MODEL,
-        "built_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-    }
-
-    save_app_store(app_slug, chunks, index, bm25, meta)
-    return app_slug, chunks, index, bm25, meta
+    try:
+        chunks_existing, index_existing, bm25_existing, meta_existing = load_app_store(app_slug)
+        return app_slug, chunks_existing, index_existing, bm25_existing, meta_existing
+    except Exception as e:
+        raise RuntimeError(f"Local store unavailable for {app_name}. Auto-update is disabled. {e}")
 
 def read_apps_file(file_path: str) -> Dict[str, Dict[str, str]]:
     apps: Dict[str, Dict[str, str]] = {}

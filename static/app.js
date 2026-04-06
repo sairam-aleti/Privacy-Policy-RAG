@@ -141,7 +141,15 @@ document.addEventListener("DOMContentLoaded", () => {
         card.style.animationDelay = `${index * 0.08}s`;
 
         const statusClass = `badge-${result.status.toLowerCase()}`;
-        const statusLabel = result.status.replace(/_/g, " ");
+        let statusLabel = result.status.replace(/_/g, " ");
+        
+        if (result.status === "VERIFIED" || result.status === "PARTIALLY_VERIFIED") {
+            statusLabel = "Following Privacy Policy";
+        } else if (result.status === "REJECTED" || result.status === "NOT_FOUND" || result.status === "ERROR") {
+            statusLabel = "Not Following";
+        } else if (result.status === "INSUFFICIENT") {
+            statusLabel = "Insufficient Information";
+        }
 
         // Tags
         const tags = [];
@@ -216,15 +224,84 @@ document.addEventListener("DOMContentLoaded", () => {
             if (s in counts) counts[s]++;
             else counts.ERROR++;
         }
-        const verified = counts.VERIFIED + counts.PARTIALLY_VERIFIED;
-        const rejected = counts.REJECTED + counts.ERROR;
-        const insufficient = counts.NOT_FOUND + counts.INSUFFICIENT;
+        const following = counts.VERIFIED + counts.PARTIALLY_VERIFIED;
+        const notFollowing = counts.REJECTED + counts.NOT_FOUND + counts.ERROR;
+        const insufficient = counts.INSUFFICIENT;
 
         resultsStats.innerHTML = `
-            <span class="stat-badge stat-verified">✓ ${verified} Verified</span>
-            <span class="stat-badge stat-rejected">✗ ${rejected} Rejected</span>
-            <span class="stat-badge stat-insufficient">⚠ ${insufficient} Insufficient</span>
+            <span class="stat-badge stat-verified">✓ ${following} Following Privacy Policy</span>
+            <span class="stat-badge stat-rejected">✗ ${notFollowing} Not Following</span>
+            <span class="stat-badge stat-insufficient">⚠ ${insufficient} Insufficient Information</span>
         `;
+    }
+
+    // ── Identity Tracker ──
+    const traceBtn = document.getElementById("traceBtn");
+    const resetTraceBtn = document.getElementById("resetTraceBtn");
+    const traceName = document.getElementById("traceName");
+    const tracePhone = document.getElementById("tracePhone");
+    const traceAddress = document.getElementById("traceAddress");
+    const trackerSummary = document.getElementById("trackerSummary");
+
+    function renderFiltered() {
+        if (!traceBtn) return; // Prevent errors if DOM missing
+        const nameQuery = traceName.value.trim().toLowerCase();
+        const phoneQuery = tracePhone.value.trim().toLowerCase();
+        const addrQuery = traceAddress.value.trim().toLowerCase();
+        
+        resultsGrid.innerHTML = "";
+        trackerSummary.classList.add("hidden");
+
+        const isFiltering = nameQuery || phoneQuery || addrQuery;
+        let traceCount = 0;
+        let appsExposed = new Set();
+
+        allResults.forEach((res, idx) => {
+            if (!isFiltering) {
+                renderCard(res, idx);
+                return;
+            }
+
+            // Target only data handled without policy alignment (Not Following)
+            const isUnsafe = (res.status === "REJECTED" || res.status === "NOT_FOUND" || res.status === "ERROR");
+            if (!isUnsafe) return;
+
+            const n = (res.collected_name || "").toLowerCase();
+            const p = (res.collected_phone || "").toLowerCase();
+            const a = (res.collected_address || "").toLowerCase();
+
+            let match = false;
+            // Cross-reference any provided PII
+            if (nameQuery && n.includes(nameQuery)) match = true;
+            if (phoneQuery && p.includes(phoneQuery)) match = true;
+            if (addrQuery && a.includes(addrQuery)) match = true;
+
+            if (match) {
+                renderCard(res, idx);
+                traceCount++;
+                appsExposed.add(res.app_name);
+            }
+        });
+
+        if (isFiltering) {
+            trackerSummary.classList.remove("hidden");
+            trackerSummary.innerHTML = `Found <strong>${traceCount} unauthorized privacy leaks</strong> targeting this identity across <strong>${appsExposed.size} separate apps</strong>.`;
+            trackerSummary.style.color = "var(--text-primary)";
+            trackerSummary.style.background = "var(--red-bg)";
+            trackerSummary.style.border = "1px solid rgba(239, 68, 68, 0.4)";
+            trackerSummary.style.padding = "12px 18px";
+            trackerSummary.style.borderRadius = "6px";
+        }
+    }
+
+    if (traceBtn) traceBtn.addEventListener("click", renderFiltered);
+    if (resetTraceBtn) {
+        resetTraceBtn.addEventListener("click", () => {
+            traceName.value = "";
+            tracePhone.value = "";
+            traceAddress.value = "";
+            renderFiltered();
+        });
     }
 
     // ── Export ──

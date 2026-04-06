@@ -87,6 +87,9 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
         "action": action,
         "destination": destination,
         "purpose": purpose,
+        "collected_name": finding.get("collected_name", ""),
+        "collected_phone": finding.get("collected_phone", ""),
+        "collected_address": finding.get("collected_address", ""),
         "status": "PROCESSING",
         "evidence": [],
         "answer": "",
@@ -133,11 +136,7 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
     syns = debug.get("synonyms_used", [])
     matchers = build_matchers(syns)
 
-    # Path 1: No recognized privacy term
-    if not terms:
-        result["status"] = "INSUFFICIENT"
-        result["error"] = "No recognized privacy term detected in the data_type."
-        return result
+
 
     # Path 2 has been removed to allow the LLM to semantically verify FAISS chunks (e.g. "whereabouts" = "location")
     # Path 3 (mention query): Deterministic match
@@ -184,13 +183,18 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
         for cid, ctext in final_evidence
     ]
 
-    if ok:
+    answer_upper = answer.upper()
+    if "[NOT_FOLLOWING]" in answer_upper:
+        result["status"] = "REJECTED"
+    elif "[INSUFFICIENT]" in answer_upper:
+        result["status"] = "INSUFFICIENT"
+    elif "[FOLLOWING]" in answer_upper or ok:
         result["status"] = "VERIFIED"
-        result["answer"] = answer
     else:
-        # Show the answer anyway but flag it
-        result["status"] = "PARTIALLY_VERIFIED"
-        result["answer"] = answer
+        result["status"] = "INSUFFICIENT"
+    
+    result["answer"] = answer
+    if not ok:
         result["error"] = report.get("reason", "citation_issues")
 
     return result

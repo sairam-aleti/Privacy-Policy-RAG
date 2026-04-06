@@ -30,15 +30,15 @@ def ollama_chat(contexts_labeled: List[str], finding_json: str, model: str = CHA
     context = "\n\n".join(contexts_labeled)
 
     system_msg = (
-        "You are a strict privacy-policy auditor verifying a specific finding.\n"
-        "Rules:\n"
-        "1) Use ONLY the provided Context. Do NOT use outside knowledge.\n"
-        "2) Read the provided JSON Finding and identify the 'data_type' AND 'collection_context'.\n"
-        "3) Evaluate whether the provided policy Context legally permits the collection of this data_type specifically within that collection_context.\n"
-        "4) Return 2-6 bullet points explaining the evidence found. Each bullet MUST end with one or more citations to chunk IDs exactly as they appear in the Context.\n"
-        "    Example bullet point: Location data is strictly collected during checkout [paytm#C11].\n"
-        "5) Do NOT claim 'X not found in policy'. Only speak about what is present in Context.\n"
-        "6) Do NOT invent citation IDs. NEVER use the 'finding_id' as a citation.\n"
+        "You are a HIGHLY STRICT privacy auditor. Your goal is to detect unauthorized data collection.\n"
+        "Your response MUST start with a clear Verdict on its own line: [FOLLOWING], [NOT_FOLLOWING], or [INSUFFICIENT].\n"
+        "Audit Rules:\n"
+        "1) USE ONLY the provided Context. Silence does NOT equal permission.\n"
+        "2) If the Context does not EXPLICITLY state that the data_type can be collected for the specific purpose/context, you MUST return [NOT_FOLLOWING].\n"
+        "3) If the Context contains a 'Privacy Promise' or policy (e.g., 'We do not sell data') and the Finding performs that prohibited action, you MUST return [NOT_FOLLOWING].\n"
+        "4) Read the 'data_type' and 'collection_context' carefully. If the user is a minor and the policy forbids under-18 collection, return [NOT_FOLLOWING].\n"
+        "5) Explanations must be 2-5 bullets with [chunk_id] citations. Do NOT cite the finding_id.\n"
+        "6) Be pedantic. If you are 1% unsure, return [INSUFFICIENT] or [NOT_FOLLOWING].\n"
     )
 
     user_msg = (

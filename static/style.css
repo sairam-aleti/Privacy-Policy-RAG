@@ -387,9 +387,9 @@ main {
     font-weight: 500;
 }
 
-.stat-verified { background: var(--green-bg); color: var(--green); }
-.stat-rejected { background: var(--red-bg); color: var(--red); }
-.stat-insufficient { background: var(--amber-bg); color: var(--amber); }
+.stat-verified { background: var(--green-bg); color: var(--green); border: 1px solid rgba(34, 197, 94, 0.2); }
+.stat-rejected { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.2); }
+.stat-insufficient { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); border: 1px solid rgba(148, 163, 184, 0.2); }
 
 .results-grid {
     display: grid;
@@ -458,24 +458,29 @@ main {
 
 /* Status Badges */
 .status-badge {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 5px 14px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 16px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.2px;
 }
 
-.badge-verified {
+.badge-verified, .badge-partially_verified {
     background: var(--green-bg);
     color: var(--green);
     border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
-.badge-rejected {
+.badge-rejected, .badge-not_found, .badge-error {
     background: var(--red-bg);
     color: var(--red);
     border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-insufficient {
+    background: rgba(148, 163, 184, 0.1);
+    color: var(--text-muted);
+    border: 1px solid rgba(148, 163, 184, 0.3);
 }
 
 .badge-insufficient, .badge-not_found {
@@ -606,10 +611,54 @@ footer code {
     display: none !important;
 }
 
+/* ============ TRACKER ============ */
+.tracker-card {
+    margin-bottom: 24px;
+    padding: 22px 28px;
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.tracker-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--amber);
+}
+
+.tracker-inputs {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.tracker-inputs input {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-glow);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--text-primary);
+    flex: 1;
+    min-width: 150px;
+    transition: all var(--transition);
+}
+
+.tracker-inputs input:focus {
+    outline: none;
+    border-color: var(--amber);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.1);
+}
+
+.tracker-inputs input::placeholder {
+    color: var(--text-muted);
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 768px) {
     .header-content { flex-direction: column; gap: 12px; }
     .single-input { flex-direction: column; }
     .results-header { flex-direction: column; gap: 12px; align-items: flex-start; }
     .card-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+    .tracker-inputs { flex-direction: column; align-items: stretch; }
 }

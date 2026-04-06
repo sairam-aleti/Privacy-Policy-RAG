@@ -1,87 +1,56 @@
-# Privacy Policy RAG — Web UI & Data Refinement Walkthrough
+# 🕵️ Privacy Policy RAG — Cross-App Exposure Tracker
 
-## What Changed
+The dashboard has been upgraded from a generic compliance auditor into a professional identity vulnerability tracker. It can now correlate unauthorized data collection across multiple applications for specific user profiles.
 
-### 1. Model Upgrade
-- Upgraded from `llama3.2:3b` (3B params) to `llama3:8b` (8B params) in [llm.py](file:///home/apf/Privacy-Policy-RAG/core/llm.py)
-- Dramatically improves citation formatting, instruction adherence, and reasoning depth for complex scenarios.
+## Key Upgrades
 
-### 2. Contextual Data Constraints (JSONL Refinement)
-- We migrated the testing data from acting like a "cheat sheet" to acting as strict LLM verification constraints. 
-- Discrepancies and side-notes were stripped out. Instead, each finding now includes a `collection_context` (e.g. "Only at payment time") and an exact `destination` network endpoint.
-- The internal LLM prompt in `llm.py` was explicitly updated to command `llama3:8b` to verify if the scraped text supports the *contextual restriction* specified.
+### 1. Cross-App Exposure Tracker
+We added a professional "Cross-App Exposure Tracker" module. 
+- **Purpose**: Correlate unauthorized data collection targeting a specific user profile across the verified network.
+- **Logic**: It identifies "collected" PII (Full Name, Mobile Number, Permanent Address) within findings that have a `REJECTED` or `NOT_FOUND` status.
+- **UI**: A dedicated search interface allows tracing exposures by specific PII attributes.
 
-### 3. Premium Dashboard UI
-- Converted the minimalist theme into an animated, state-of-the-art glassmorphism design.
-- The background now smoothly transitions between deep espresso, glowing violet, and warm amber highlights.
-- Cards feature intensified backdrop-blurs, glowing borders, and silky micro-interactions.
+### 2. Professional Data Schema
+- Migrated from "leaked" terminology to professional `collected_name`, `collected_phone`, and `collected_address` keys.
+- Updated [fake_data.jsonl](file:///home/apf/Privacy-Policy-RAG/fake_data.jsonl) with 3 persistent "victim" profiles scattered across 20 test cases to simulate real-world cross-app tracking.
 
-### 2. Flask Web Server
-- Created [server.py](file:///e:/Privacy%20Policy%20RAG/server.py) — replaces the terminal CLI entirely
-- Exports a reusable `process_finding()` function used by both API endpoints
-- REST API:
-  - `GET /api/apps` — list all loaded apps
-  - `POST /api/verify-single` — verify one JSON finding
-  - `POST /api/verify` — batch verify a JSONL file
+### 3. Frozen Vector Stores (No-Update Mode)
+- **Auto-Update Disabled**: Modified [core/vector_store.py](file:///home/apf/Privacy-Policy-RAG/core/vector_store.py) to prevent the system from automatically scraping websites or re-embedding chunks on startup.
+- **Local Priority**: The system now strictly uses the pre-built embeddings in the `stores/` directory.
 
-### 3. Professional Web Dashboard
-Created a warm espresso and amber-themed, glassmorphism UI in [static/](file:///e:/Privacy%20Policy%20RAG/static/):
-
-| File | Purpose |
-|------|---------|
-| [index.html](file:///e:/Privacy%20Policy%20RAG/static/index.html) | Single-page dashboard layout |
-| [style.css](file:///e:/Privacy%20Policy%20RAG/static/style.css) | Espresso/Amber theme, robust UI animations |
-| [app.js](file:///e:/Privacy%20Policy%20RAG/static/app.js) | File upload, batch processing, JSON export |
-
-**Key UI Features:**
-- Drag-and-drop `.jsonl` file upload
-- Live progress bar during batch processing
-- Per-finding result cards with color-coded status badges and **Hybrid RRF Search indicators**
-- Expandable evidence chunk viewer per card
-- JSON export button for all results
-
-### 4. Hybrid Search Pipeline (FAISS + BM25)
-- Automatically tokenizes policy text and saves a `bm25.pkl` index alongside FAISS.
-- Implements **Reciprocal Rank Fusion (RRF)** in `verifier.py` to securely combine Semantic matches (FAISS) with Lexical keyword matches (BM25).
-- ✨ **11x Generation Speedup:** By trusting the extreme accuracy of RRF, standard per-chunk LLM validation is bypassed. The system feeds the Top 5 RRF chunks directly into the LLM, reducing batch generation from ~15 mins to under 60 seconds.
-
-### 5. Batch Processing
-- Upload your entire `fake_data.jsonl` at once — processes all findings across multiple apps automatically
-- Each finding rendered as a professional result card with its own status
+### 4. Logic & Model Refinement
+- **Semantic Path Fix**: Removed a legacy "fast-fail" string check in `server.py` that was blocking the AI from finding semantic matches (e.g., matching "whereabouts" to "location").
+- **8B Parameter Reasoning**: The backend is powered by `llama3:8b`, providing high-recall auditing of complex legal contexts.
 
 ---
 
 ## How to Run
 
 ```bash
-# 1. Make sure Ollama is running
-ollama serve
+# 1. Ensure Ollama is running with the required models
+ollama run llama3:8b
+ollama run nomic-embed-text
 
-# 2. Activate the conda environment
-conda activate privacy-rag
-
-# 3. Start the web server
+# 2. Activate environment and start server
+source venv/bin/activate
 python server.py
 
-# 4. Open in browser
+# 3. Access Dashboard
 # → http://localhost:5000
 ```
 
-## How to Test
+## Testing the Tracker
 
-1. Open `http://localhost:5000` in your browser
-2. Drag and drop `fake_data.jsonl` into the upload zone
-3. Watch the progress bar as each finding is processed
-4. Review per-finding result cards with status badges
-5. Click "Export JSON" to download all results
+1. **Upload**: Drag and drop [fake_data.jsonl](file:///home/apf/Privacy-Policy-RAG/fake_data.jsonl) into the dashboard.
+2. **Audit**: Wait for the 8B model to finish the batch verification.
+3. **Trace**: In the **Cross-App Exposure Tracker** box, enter a known test number like `+91-9876500001`.
+4. **Expose**: Click **Trace Exposures** to see a grouped summary of every app that is currently handling that specific user's data without policy authorization.
 
 ---
 
-## Verification Results
+## Verification Summary
 
-- Flask server starts successfully, loads 18 app stores
-- Web UI renders with dark theme, glassmorphism, all interactive elements
-- Status indicator shows "Online" with 18 apps loaded
-- Upload zone, single-query input, and verify button all functional
-
-![Web UI Demo](/C:/Users/sai ram/.gemini/antigravity/brain/0384d940-bbd2-4ebe-9599-008c3c8bcd30/web_ui_verification_1774025360117.webp)
+- [x] Terminology updated to "collected_*" across Backend/Frontend/Data.
+- [x] Auto-scraping/Auto-embedding disabled in `vector_store.py`.
+- [x] Professional UI implemented (no emojis, clean amber/espresso glassmorphism).
+- [x] Cross-app correlation logic verified in `app.js`.

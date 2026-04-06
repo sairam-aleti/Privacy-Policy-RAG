@@ -72,6 +72,23 @@
                     <button id="exportBtn" class="btn btn-secondary">⬇ Export JSON</button>
                 </div>
             </div>
+
+            <!-- Identity Leak Tracker -->
+            <div class="tracker-card glass-card" style="border-left: 4px solid var(--amber); background: rgba(30,30,30,0.6);">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <h3 style="margin: 0; padding: 0;">Cross-App Exposure Tracker</h3>
+                </div>
+                <p class="upload-desc" style="margin-bottom: 20px;">Correlate unauthorized data collection targeting a specific user profile across the verified network.</p>
+                <div class="tracker-inputs">
+                    <input type="text" id="traceName" placeholder="Full Name (e.g. Priya Patel)">
+                    <input type="text" id="tracePhone" placeholder="Mobile Number (e.g. +91-00000)">
+                    <input type="text" id="traceAddress" placeholder="Permanent Area ID / Address">
+                    <button id="traceBtn" class="btn btn-primary">Trace Exposures</button>
+                    <button id="resetTraceBtn" class="btn btn-secondary">Clear Array</button>
+                </div>
+                <div id="trackerSummary" class="error-msg hidden" style="margin-top: 20px;"></div>
+            </div>
+
             <div class="results-grid" id="resultsGrid"></div>
         </section>
     </main>
