@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const ollamaStatus = document.getElementById("ollamaStatus");
     const appCountEl = document.getElementById("appCount");
 
-    let allResults = [];
+
 
     // ── Check API status ──
     async function checkStatus() {
@@ -90,46 +90,87 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsText(file);
     }
 
+    // ── Global State ──
+    let allResults = [];
+    let auditCache = {}; // Stores { finding_id: result_object }
+
     // ── Batch processor  ──
     async function processBatch(findings) {
-        allResults = [];
+        // We do NOT clear allResults here anymore; we append/update
+        // But for the grid display, we usually want to show the current "set"
         resultsGrid.innerHTML = "";
         resultsSection.classList.remove("hidden");
         progressSection.classList.remove("hidden");
         singleBtn.disabled = true;
 
         const total = findings.length;
-        progressTitle.textContent = `Processing ${total} finding${total > 1 ? 's' : ''}…`;
+        progressTitle.textContent = `Auditing ${total} records…`;
+
+        // AUTO-APP DETECTION: Identify and set the app dropdown automatically
+        if (findings.length > 0 && findings[0].app_name) {
+            const detectedApp = findings[0].app_name.toLowerCase().replace(/ /g, "_");
+            const appOption = Array.from(appSelect.options).find(opt => opt.value === detectedApp);
+            if (appOption) {
+                appSelect.value = detectedApp;
+            }
+        }
+
+        // Local array just for this batch's display
+        const batchResults = [];
 
         for (let i = 0; i < total; i++) {
+            const finding = findings[i];
+            const fid = finding.finding_id;
+
             progressCount.textContent = `${i + 1} / ${total}`;
             progressFill.style.width = `${((i + 1) / total) * 100}%`;
+
+            // CACHE CHECK: If already audited, skip the LLM call
+            if (auditCache[fid]) {
+                const cachedRes = auditCache[fid];
+                batchResults.push(cachedRes);
+                
+                // Ensure it's in allResults if not present
+                if (!allResults.find(r => r.finding_id === fid)) {
+                    allResults.push(cachedRes);
+                }
+                
+                renderCard(cachedRes, i);
+                continue;
+            }
 
             try {
                 const resp = await fetch("/api/verify-single", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(findings[i]),
+                    body: JSON.stringify(finding),
                 });
                 const result = await resp.json();
-                allResults.push(result);
+                
+                // Save to cache
+                auditCache[fid] = result;
+                
+                // Update allResults (avoid duplicates if re-auditing)
+                const existingIdx = allResults.findIndex(r => r.finding_id === fid);
+                if (existingIdx !== -1) allResults[existingIdx] = result;
+                else allResults.push(result);
+
+                batchResults.push(result);
                 renderCard(result, i);
             } catch (err) {
                 const errorResult = {
-                    finding_id: findings[i].finding_id || `F-${i}`,
-                    app_name: findings[i].app_name || "Unknown",
-                    data_type: findings[i].data_type || "unknown",
+                    finding_id: fid || `F-${i}`,
+                    app_name: finding.app_name || "Unknown",
                     status: "ERROR",
                     error: err.message,
                     answer: "",
                     evidence: [],
                 };
-                allResults.push(errorResult);
                 renderCard(errorResult, i);
             }
         }
 
-        progressTitle.textContent = "Processing complete!";
+        progressTitle.textContent = "Audit session complete!";
         singleBtn.disabled = false;
         updateStats();
     }
@@ -375,11 +416,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         trackerSummary.classList.remove("hidden");
         if (violationResults.length > 0) {
-            trackerSummary.innerHTML = `Forensic analysis identified <strong>${finalResults.length} total data points</strong> for this identity via technical bridge linkage. <br> <strong>${violationResults.length} unauthorized findings</strong> detected within the ${appSelect.options[appSelect.selectedIndex].text} ecosystem.`;
+            const appName = appSelect.options[appSelect.selectedIndex]?.text || "selected app";
+            trackerSummary.innerHTML = `<strong>${violationResults.length} unauthorized findings</strong> detected within the ${appName} ecosystem.`;
             trackerSummary.style.background = "var(--red-bg)";
             trackerSummary.style.border = "1px solid rgba(239, 68, 68, 0.4)";
         } else {
-            trackerSummary.innerHTML = `Identified <strong>${finalResults.length} data points</strong> for this identity. <br> <strong>0 unauthorized privacy leaks</strong> detected.`;
+            trackerSummary.innerHTML = `<strong>0 unauthorized privacy leaks</strong> detected.`;
             trackerSummary.style.background = "var(--glass-bg)";
             trackerSummary.style.border = "1px solid var(--border)";
         }
@@ -392,7 +434,9 @@ document.addEventListener("DOMContentLoaded", () => {
             idValueInput.value = "";
             resultsSection.classList.add("hidden");
             allResults = [];
+            auditCache = {}; // Full reset
             resultsGrid.innerHTML = "";
+            trackerSummary.classList.add("hidden");
         });
     }
 
