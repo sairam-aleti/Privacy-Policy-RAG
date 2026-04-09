@@ -69,27 +69,27 @@ def init_stores():
 # ---------------------------------------------------------------------------
 
 def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Run the full RAG verification pipeline for a single finding dict.
-    Returns a structured result dict ready for the UI.
-    """
-    finding_id = finding.get("finding_id", f"F-{uuid.uuid4().hex[:8].upper()}")  # type: ignore
-    app_name = finding.get("app_name", "Unknown")
-    data_type = finding.get("data_type", "unknown")
+    """Verify a single finding using the RAG pipeline."""
+    app_name = finding.get("app_name", "")
+    finding_id = finding.get("finding_id", "")
     action = finding.get("action", "")
     destination = finding.get("destination", "")
     purpose = finding.get("purpose", "")
 
+    # Extract all collected attributes to form the Bundle Query
+    collected_fields = {k.replace("collected_", "").replace("_", " ").title(): v 
+                        for k, v in finding.items() if k.startswith("collected_") and v}
+    
+    # Bundle Query Focus
+    data_type = ", ".join(collected_fields.keys()) if collected_fields else "General Telemetry"
+
     result: Dict[str, Any] = {
         "finding_id": finding_id,
         "app_name": app_name,
-        "data_type": data_type,
+        "data_type": data_type, # Now represents the entire bundle
         "action": action,
         "destination": destination,
         "purpose": purpose,
-        "collected_name": finding.get("collected_name", ""),
-        "collected_phone": finding.get("collected_phone", ""),
-        "collected_address": finding.get("collected_address", ""),
         "status": "PROCESSING",
         "evidence": [],
         "answer": "",
@@ -98,6 +98,10 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
         "total_chunks_checked": 0,
         "error": None,
     }
+    # Add all collected fields to the result for UI transparency
+    for k, v in finding.items():
+        if k.startswith("collected_"):
+            result[k] = v
 
     # Locate the app store
     k = app_key(app_name)
@@ -115,7 +119,10 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
     assert store is not None
     result["source_url"] = store.get("url", "")
 
-    question = json.dumps(finding)
+    # Construct forensic search question: "Policy regarding [Attributes] during [Context]"
+    context = finding.get("collection_context", "Background technical telemetry")
+    question = f"What is the privacy policy regarding the collection of {data_type} during {context}?"
+    
     app_slug = str(store.get("app_slug", ""))
     chunks: List[str] = store.get("chunks", [])
     index = store.get("index")
@@ -222,7 +229,24 @@ def api_apps():
     return jsonify({"apps": apps_list})
 
 
-@app.route("/api/verify", methods=["POST"])
+@app.route('/api/load-research-data/<app_name>', methods=['GET'])
+def load_research_data(app_name):
+    try:
+        filename = f"fake_data/{app_name.lower().replace(' ', '_')}.jsonl"
+        if not os.path.exists(filename):
+            # Try to find closely named file
+            return jsonify({"error": f"No data found for {app_name}"}), 404
+            
+        findings = []
+        with open(filename, 'r') as f:
+            for line in f:
+                if line.strip():
+                    findings.append(json.loads(line))
+        return jsonify({"findings": findings})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/process', methods=['POST'])
 def api_verify_batch():
     """Accept a JSONL file or JSON array, process each finding."""
     results = []

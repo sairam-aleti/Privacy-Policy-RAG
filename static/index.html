@@ -78,13 +78,37 @@
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                     <h3 style="margin: 0; padding: 0;">Cross-App Exposure Tracker</h3>
                 </div>
-                <p class="upload-desc" style="margin-bottom: 20px;">Correlate unauthorized data collection targeting a specific user profile across the verified network.</p>
-                <div class="tracker-inputs">
-                    <input type="text" id="traceName" placeholder="Full Name (e.g. Priya Patel)">
-                    <input type="text" id="tracePhone" placeholder="Mobile Number (e.g. +91-00000)">
-                    <input type="text" id="traceAddress" placeholder="Permanent Area ID / Address">
-                    <button id="traceBtn" class="btn btn-primary">Trace Exposures</button>
-                    <button id="resetTraceBtn" class="btn btn-secondary">Clear Array</button>
+                <p class="upload-desc" style="margin-bottom: 15px;">Target a specific app and identity field to audit unauthorized collection patterns.</p>
+                <div class="tracker-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <select id="appSelect" style="width: 100%; border-radius: 4px; padding: 10px;">
+                        <option value="">-- Choose App --</option>
+                        <option value="paytm">PayTM</option>
+                        <option value="mobikwik">Mobikwik</option>
+                        <option value="freecharge">Freecharge</option>
+                        <option value="google_pay">Google Pay</option>
+                        <option value="mcd_app">MCD App</option>
+                        <option value="mseva">mSeva</option>
+                        <option value="bses_rajdhani">BSES Rajdhani</option>
+                        <option value="mpassport_seva">mPassport Seva</option>
+                        <option value="aarogya_setu">Aarogya Setu</option>
+                        <option value="digilocker">Digilocker</option>
+                        <option value="coinswitch">CoinSwitch</option>
+                        <option value="wazirx">WazirX</option>
+                        <option value="coindcx">CoinDCX</option>
+                        <option value="binance">Binance</option>
+                    </select>
+                    <select id="idTypeSelect" style="width: 100%; border-radius: 4px; padding: 10px;">
+                        <option value="collected_name">Full Name</option>
+                        <option value="collected_phone">Phone Number</option>
+                        <option value="collected_email">Email Address</option>
+                        <option value="collected_pan">PAN Card</option>
+                        <option value="collected_aadhaar">Aadhaar Number</option>
+                        <option value="collected_bank_account">Bank Account</option>
+                        <option value="collected_login_id">Login ID / Wallet ID</option>
+                    </select>
+                    <input type="text" id="idValueInput" placeholder="Enter identifier value..." style="grid-column: span 2;">
+                    <button id="traceBtn" class="btn btn-primary" style="grid-column: span 1;">Trace Exposures</button>
+                    <button id="resetTraceBtn" class="btn btn-secondary" style="grid-column: span 1;">Clear Array</button>
                 </div>
                 <div id="trackerSummary" class="error-msg hidden" style="margin-top: 20px;"></div>
             </div>

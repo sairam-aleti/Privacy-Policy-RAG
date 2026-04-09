@@ -193,6 +193,27 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }
 
+        // Collected Data Table (Mixed PII + Tech)
+        let collectionHtml = "";
+        const collectedEntries = Object.entries(result).filter(([k]) => k.startsWith("collected_"));
+        if (collectedEntries.length > 0) {
+            const rows = collectedEntries.map(([k, v]) => {
+                const label = k.replace("collected_", "").replace(/_/g, " ").toUpperCase();
+                return `
+                    <div class="evidence-item" style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 4px 0;">
+                        <span style="font-weight: 600; font-size: 10px; color: var(--amber); width: 40%;">${escapeHtml(label)}</span>
+                        <span style="font-size: 11px; color: var(--text-secondary);">${escapeHtml(v)}</span>
+                    </div>
+                `;
+            }).join("");
+            collectionHtml = `
+                <div style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                    <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px;">Intercepted Digital Footprint</div>
+                    ${rows}
+                </div>
+            `;
+        }
+
         card.innerHTML = `
             <div class="card-header">
                 <div class="card-meta">
@@ -206,9 +227,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span class="status-badge ${statusClass}">${statusLabel}</span>
             </div>
             <div class="card-body">
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">🕒 Recorded At: ${escapeHtml(result.timestamp || "N/A")}</div>
                 <div class="card-tags">${tagsHtml}${statsHtml}</div>
                 ${answerHtml}
                 ${errorHtml}
+                ${collectionHtml}
             </div>
             ${evidenceHtml}
         `;
@@ -238,69 +261,138 @@ document.addEventListener("DOMContentLoaded", () => {
     // ── Identity Tracker ──
     const traceBtn = document.getElementById("traceBtn");
     const resetTraceBtn = document.getElementById("resetTraceBtn");
-    const traceName = document.getElementById("traceName");
-    const tracePhone = document.getElementById("tracePhone");
-    const traceAddress = document.getElementById("traceAddress");
+    const appSelect = document.getElementById("appSelect");
+    const idTypeSelect = document.getElementById("idTypeSelect");
+    const idValueInput = document.getElementById("idValueInput");
     const trackerSummary = document.getElementById("trackerSummary");
 
-    function renderFiltered() {
-        if (!traceBtn) return; // Prevent errors if DOM missing
-        const nameQuery = traceName.value.trim().toLowerCase();
-        const phoneQuery = tracePhone.value.trim().toLowerCase();
-        const addrQuery = traceAddress.value.trim().toLowerCase();
-        
-        resultsGrid.innerHTML = "";
-        trackerSummary.classList.add("hidden");
+    async function handleTrace() {
+        const appChoice = appSelect.value;
+        const idType = idTypeSelect.value;
+        const idValue = idValueInput.value.trim().toLowerCase();
 
-        const isFiltering = nameQuery || phoneQuery || addrQuery;
-        let traceCount = 0;
-        let appsExposed = new Set();
+        if (!appChoice) {
+            alert("Please select an app to audit.");
+            return;
+        }
+        if (!idValue) {
+            alert("Please enter an identifier value to trace.");
+            return;
+        }
 
-        allResults.forEach((res, idx) => {
-            if (!isFiltering) {
-                renderCard(res, idx);
-                return;
-            }
-
-            // Target only data handled without policy alignment (Not Following)
-            const isUnsafe = (res.status === "REJECTED" || res.status === "NOT_FOUND" || res.status === "ERROR");
-            if (!isUnsafe) return;
-
-            const n = (res.collected_name || "").toLowerCase();
-            const p = (res.collected_phone || "").toLowerCase();
-            const a = (res.collected_address || "").toLowerCase();
-
-            let match = false;
-            // Cross-reference any provided PII
-            if (nameQuery && n.includes(nameQuery)) match = true;
-            if (phoneQuery && p.includes(phoneQuery)) match = true;
-            if (addrQuery && a.includes(addrQuery)) match = true;
-
-            if (match) {
-                renderCard(res, idx);
-                traceCount++;
-                appsExposed.add(res.app_name);
-            }
-        });
-
-        if (isFiltering) {
-            trackerSummary.classList.remove("hidden");
-            trackerSummary.innerHTML = `Found <strong>${traceCount} unauthorized privacy leaks</strong> targeting this identity across <strong>${appsExposed.size} separate apps</strong>.`;
-            trackerSummary.style.color = "var(--text-primary)";
-            trackerSummary.style.background = "var(--red-bg)";
-            trackerSummary.style.border = "1px solid rgba(239, 68, 68, 0.4)";
-            trackerSummary.style.padding = "12px 18px";
-            trackerSummary.style.borderRadius = "6px";
+        // 1. Load the specific research data for this app if not already loaded or different
+        // For simplicity, we'll reload the results set for the specific app
+        try {
+            const resp = await fetch(`/api/load-research-data/${appChoice}`);
+            if (!resp.ok) throw new Error("Failed to load app data");
+            const data = await resp.json();
+            
+            // 2. Process the batch (verify against policy)
+            // Note: This triggers the LLM for the 30 rows
+            await processBatch(data.findings);
+            
+            // 3. Apply Local Identity Filtering
+            applyIdentityFilter(idType, idValue);
+        } catch (err) {
+            alert(`Error tracing app data: ${err.message}`);
         }
     }
 
-    if (traceBtn) traceBtn.addEventListener("click", renderFiltered);
+    function applyIdentityFilter(targetKey, targetValue) {
+        resultsGrid.innerHTML = "";
+        trackerSummary.classList.add("hidden");
+
+        // --- Recursive Forensic Linkage Algorithm ---
+        
+        let identifiedIndices = new Set();
+        let knownValues = {
+            collected_name: new Set(),
+            collected_phone: new Set(),
+            collected_email: new Set(),
+            collected_pan: new Set(),
+            collected_aadhaar: new Set(),
+            collected_bank_account: new Set(),
+            collected_login_id: new Set(),
+            collected_device_id: new Set(),
+            collected_advertisement_id: new Set(),
+            collected_local_ip: new Set()
+        };
+
+        // 1. Initial Seed: Find records matching the user's search input
+        allResults.forEach((res, idx) => {
+            const val = (res[targetKey] || "").toLowerCase();
+            if (val.includes(targetValue)) {
+                identifiedIndices.add(idx);
+                // Extract all known identity markers from this seed record
+                for (let key in knownValues) {
+                    if (res[key]) knownValues[key].add(res[key].toLowerCase());
+                }
+            }
+        });
+
+        if (identifiedIndices.size === 0) {
+            trackerSummary.classList.remove("hidden");
+            trackerSummary.innerHTML = `No records found for this identifier in the selected app.`;
+            trackerSummary.style.background = "var(--glass-bg)";
+            return;
+        }
+
+        // 2. Recursive Expansion: "Hop" from PII to Technical Bridges (Device ID, etc.)
+        let addedNewMatch = true;
+        while (addedNewMatch) {
+            addedNewMatch = false;
+            allResults.forEach((res, idx) => {
+                if (identifiedIndices.has(idx)) return; // Already linked
+
+                // Check if this row shares ANY known identity marker or biological/technical bridge
+                let isMatch = false;
+                for (let key in knownValues) {
+                    const rowVal = (res[key] || "").toLowerCase();
+                    if (rowVal && knownValues[key].has(rowVal)) {
+                        isMatch = true;
+                        break;
+                    }
+                }
+
+                if (isMatch) {
+                    identifiedIndices.add(idx);
+                    addedNewMatch = true;
+                    // Extract NEW markers from this newly linked record (Expand the graph)
+                    for (let key in knownValues) {
+                        if (res[key]) knownValues[key].add(res[key].toLowerCase());
+                    }
+                }
+            });
+        }
+
+        // 3. Final Filter: Identify Privacy Violations (status !== VERIFIED)
+        const finalResults = Array.from(identifiedIndices).map(idx => allResults[idx]);
+        const violationResults = finalResults.filter(r => 
+            r.status === "REJECTED" || r.status === "NOT_FOUND" || r.status === "ERROR"
+        );
+
+        violationResults.forEach((res, idx) => renderCard(res, idx));
+
+        trackerSummary.classList.remove("hidden");
+        if (violationResults.length > 0) {
+            trackerSummary.innerHTML = `Forensic analysis identified <strong>${finalResults.length} total data points</strong> for this identity via technical bridge linkage. <br> <strong>${violationResults.length} unauthorized findings</strong> detected within the ${appSelect.options[appSelect.selectedIndex].text} ecosystem.`;
+            trackerSummary.style.background = "var(--red-bg)";
+            trackerSummary.style.border = "1px solid rgba(239, 68, 68, 0.4)";
+        } else {
+            trackerSummary.innerHTML = `Identified <strong>${finalResults.length} data points</strong> for this identity. <br> <strong>0 unauthorized privacy leaks</strong> detected.`;
+            trackerSummary.style.background = "var(--glass-bg)";
+            trackerSummary.style.border = "1px solid var(--border)";
+        }
+    }
+
+    if (traceBtn) traceBtn.addEventListener("click", handleTrace);
     if (resetTraceBtn) {
         resetTraceBtn.addEventListener("click", () => {
-            traceName.value = "";
-            tracePhone.value = "";
-            traceAddress.value = "";
-            renderFiltered();
+            appSelect.selectedIndex = 0;
+            idValueInput.value = "";
+            resultsSection.classList.add("hidden");
+            allResults = [];
+            resultsGrid.innerHTML = "";
         });
     }
 

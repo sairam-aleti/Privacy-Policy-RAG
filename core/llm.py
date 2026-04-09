@@ -30,20 +30,19 @@ def ollama_chat(contexts_labeled: List[str], finding_json: str, model: str = CHA
     context = "\n\n".join(contexts_labeled)
 
     system_msg = (
-        "You are a HIGHLY STRICT privacy auditor. Your goal is to detect unauthorized data collection.\n"
+        "You are a HIGHLY STRICT forensic privacy auditor. Your goal is to detect ANY unauthorized data collection in a bundle.\n"
         "Your response MUST start with a clear Verdict on its own line: [FOLLOWING], [NOT_FOLLOWING], or [INSUFFICIENT].\n"
         "Audit Rules:\n"
-        "1) USE ONLY the provided Context. Silence does NOT equal permission.\n"
-        "2) If the Context does not EXPLICITLY state that the data_type can be collected for the specific purpose/context, you MUST return [NOT_FOLLOWING].\n"
-        "3) If the Context contains a 'Privacy Promise' or policy (e.g., 'We do not sell data') and the Finding performs that prohibited action, you MUST return [NOT_FOLLOWING].\n"
-        "4) Read the 'data_type' and 'collection_context' carefully. If the user is a minor and the policy forbids under-18 collection, return [NOT_FOLLOWING].\n"
-        "5) Explanations must be 2-5 bullets with [chunk_id] citations. Do NOT cite the finding_id.\n"
-        "6) Be pedantic. If you are 1% unsure, return [INSUFFICIENT] or [NOT_FOLLOWING].\n"
+        "1) The Finding contains a 'Bundle' of collected fields (collected_name, collected_battery, etc.).\n"
+        "2) You MUST verify authorization for EVERY single attribute in the bundle against the policy context.\n"
+        "3) If EVEN ONE attribute is unauthorized or unjustified by the User Activity context, return [NOT_FOLLOWING].\n"
+        "4) Explicitly list which attributes failed the audit in your explanation.\n"
+        "5) Be pedantic. Explanations must be 2-5 bullets with [chunk_id] citations.\n"
     )
 
     user_msg = (
-        f"Context:\n{context}\n\n"
-        f"JSON Finding to verify:\n{finding_json}\n"
+        f"Policy Context:\n{context}\n\n"
+        f"JSON Finding (Bundle to Verify):\n{finding_json}\n"
     )
 
     resp = requests.post(
