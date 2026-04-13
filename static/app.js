@@ -175,106 +175,91 @@ document.addEventListener("DOMContentLoaded", () => {
         updateStats();
     }
 
-    // ── Render a result card ──
+    // ── Render a result card (Clean Audit Dossier) ──
     function renderCard(result, index) {
         const card = document.createElement("div");
-        card.className = "result-card";
-        card.style.animationDelay = `${index * 0.08}s`;
+        card.className = "dossier-card";
 
-        const statusClass = `badge-${result.status.toLowerCase()}`;
-        let statusLabel = result.status.replace(/_/g, " ");
+        // Logic for mapping backend status to UI dossiers
+        let statusClass = "status-insufficient";
+        let statusLabel = "INSUFFICIENT INFORMATION";
         
         if (result.status === "VERIFIED" || result.status === "PARTIALLY_VERIFIED") {
-            statusLabel = "Following Privacy Policy";
+            statusClass = "status-following";
+            statusLabel = "FOLLOWING POLICY";
         } else if (result.status === "REJECTED" || result.status === "NOT_FOUND" || result.status === "ERROR") {
-            statusLabel = "Not Following";
-        } else if (result.status === "INSUFFICIENT") {
-            statusLabel = "Insufficient Information";
+            statusClass = "status-not_following";
+            statusLabel = "NOT FOLLOWING";
         }
 
-        // Tags
-        const tags = [];
-        if (result.action) tags.push(result.action);
-        if (result.destination) tags.push(result.destination);
-        if (result.purpose) tags.push(result.purpose);
-        const tagsHtml = tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("");
+        // Digital Footprint Table Rows
+        const collectedEntries = Object.entries(result).filter(([k]) => k.startsWith("collected_"));
+        const tableRows = collectedEntries.map(([k, v]) => {
+            const label = k.replace("collected_", "").replace(/_/g, " ").toUpperCase();
+            return `
+                <tr>
+                    <td class="attr-name">${escapeHtml(label)}</td>
+                    <td class="attr-value">${escapeHtml(v)}</td>
+                </tr>
+            `;
+        }).join("");
 
-        // Answer
-        let answerHtml = "";
-        if (result.answer) {
-            answerHtml = `<div class="answer-text">${formatAnswer(result.answer)}</div>`;
-        }
-
-        // Error
-        let errorHtml = "";
-        if (result.error && result.status !== "VERIFIED") {
-            errorHtml = `<div class="error-msg">${escapeHtml(result.error)}</div>`;
-        }
-
-        // Verification stats
-        let statsHtml = "";
-        if (result.verified_chunks !== undefined && result.total_chunks_checked) {
-            statsHtml = `<span class="tag" style="color: var(--amber);">⚡ Hybrid RRF Search</span> <span class="tag">✓ Top ${result.verified_chunks} context chunks analyzed</span>`;
-        }
-
-        // Evidence
-        let evidenceHtml = "";
+        // Footnotes / Evidence
+        let footnotesHtml = "";
         if (result.evidence && result.evidence.length > 0) {
-            const items = result.evidence.map(ev =>
-                `<div class="evidence-item">
-                    <span class="chunk-id">${escapeHtml(ev.chunk_id || ev.citation || "")}</span>
-                    ${escapeHtml(ev.text || ev.sentence || "")}
+            const items = result.evidence.map((ev, i) =>
+                `<div class="footnote-item">
+                    <span class="footnote-ref">[${i + 1}]</span>
+                    <div>
+                        <span style="font-size: 10px; display: block; color: var(--accent-blue);">${escapeHtml(ev.chunk_id || ev.citation || "POLICY_REF")}</span>
+                        ${escapeHtml(ev.text || ev.sentence || "")}
+                    </div>
                 </div>`
             ).join("");
-            evidenceHtml = `
-                <button class="evidence-toggle" onclick="this.nextElementSibling.classList.toggle('open')">
-                    ▸ View the AI's sourced evidence (${result.evidence.length} citations)
-                </button>
-                <div class="evidence-panel">${items}</div>
-            `;
-        }
-
-        // Collected Data Table (Mixed PII + Tech)
-        let collectionHtml = "";
-        const collectedEntries = Object.entries(result).filter(([k]) => k.startsWith("collected_"));
-        if (collectedEntries.length > 0) {
-            const rows = collectedEntries.map(([k, v]) => {
-                const label = k.replace("collected_", "").replace(/_/g, " ").toUpperCase();
-                return `
-                    <div class="evidence-item" style="display: flex; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 4px 0;">
-                        <span style="font-weight: 600; font-size: 10px; color: var(--amber); width: 40%;">${escapeHtml(label)}</span>
-                        <span style="font-size: 11px; color: var(--text-secondary);">${escapeHtml(v)}</span>
-                    </div>
-                `;
-            }).join("");
-            collectionHtml = `
-                <div style="margin-top: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
-                    <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px;">Intercepted Digital Footprint</div>
-                    ${rows}
+            
+            footnotesHtml = `
+                <div class="footnotes">
+                    <div class="footnotes-title">Policy Reference & Provenance</div>
+                    ${items}
                 </div>
             `;
         }
 
         card.innerHTML = `
-            <div class="card-header">
-                <div class="card-meta">
-                    <span class="finding-id">${escapeHtml(result.finding_id || "")}</span>
-                    <span class="card-title">
-                        <span class="app-name">${escapeHtml(result.app_name || "")}</span>
-                        <span class="separator">→</span>
-                        <span class="data-type">${escapeHtml(result.data_type || "")}</span>
-                    </span>
+            <div class="dossier-header">
+                <span class="dossier-id">${escapeHtml(result.finding_id || "D-ID-UNK")}</span>
+                <span class="dossier-status ${statusClass}">${statusLabel}</span>
+            </div>
+            <div class="dossier-body">
+                <div class="incident-banner">
+                    <span>Forensic Report: ${escapeHtml(result.app_name || "Unknown Interface")}</span>
+                    <span>Incident Context: ${escapeHtml(result.collection_context || "Background Telemetry")}</span>
                 </div>
-                <span class="status-badge ${statusClass}">${statusLabel}</span>
+                
+                <div class="forensic-verdict">
+                    <div class="verdict-title">⚐ Auditor's Verdict</div>
+                    <div class="verdict-text">${formatAnswer(result.answer || "No narrative verdict provided by core engine.")}</div>
+                </div>
+
+                <div class="verdict-title">Captured Data Bundle (Digital Footprint)</div>
+                <table class="dossier-table">
+                    <thead>
+                        <tr>
+                            <th>Captured Attribute</th>
+                            <th>Intercepted Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows || '<tr><td colspan="2">No data points captured in this bundle.</td></tr>'}
+                    </tbody>
+                </table>
+
+                <div class="incident-banner" style="border: none; margin-top: 10px; opacity: 0.6;">
+                    <span>Time of Recording: ${escapeHtml(result.timestamp || "N/A")}</span>
+                </div>
+
+                ${footnotesHtml}
             </div>
-            <div class="card-body">
-                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">🕒 Recorded At: ${escapeHtml(result.timestamp || "N/A")}</div>
-                <div class="card-tags">${tagsHtml}${statsHtml}</div>
-                ${answerHtml}
-                ${errorHtml}
-                ${collectionHtml}
-            </div>
-            ${evidenceHtml}
         `;
 
         resultsGrid.appendChild(card);
@@ -293,9 +278,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const insufficient = counts.INSUFFICIENT;
 
         resultsStats.innerHTML = `
-            <span class="stat-badge stat-verified">✓ ${following} Following Privacy Policy</span>
-            <span class="stat-badge stat-rejected">✗ ${notFollowing} Not Following</span>
-            <span class="stat-badge stat-insufficient">⚠ ${insufficient} Insufficient Information</span>
+            <span class="stat-pill stat-pill-success">✓ ${following} Following Privacy Policy</span>
+            <span class="stat-pill stat-pill-danger">✗ ${notFollowing} Not Following</span>
+            <span class="stat-pill stat-pill-caution">⚠ ${insufficient} Insufficient Information</span>
         `;
     }
 
@@ -459,10 +444,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function formatAnswer(text) {
-        // Convert markdown bullets to styled html
+        if (!text) return "";
+        
+        // Convert markdown-style sections and list to structured HTML
         return escapeHtml(text)
+            .replace(/### (.*)/g, '<div style="margin-top: 20px; font-weight: 700; color: var(--text-primary); font-size: 11px; text-transform: uppercase;">$1</div>')
             .replace(/^\* /gm, "• ")
             .replace(/^- /gm, "• ")
-            .replace(/\[([^\]]+)\]/g, '<strong>[$1]</strong>');
+            .replace(/• (.*)/g, '<div style="padding-left: 12px; margin-bottom: 4px;">• $1</div>')
+            .replace(/\[([^\]]+)\]/g, '<strong style="color: var(--accent);">[$1]</strong>')
+            .replace(/\n\n/g, '<div style="height: 12px;"></div>')
+            .replace(/\n/g, "<br>");
     }
 });

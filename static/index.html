@@ -3,59 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy RAG — Compliance Auditor</title>
+    <title>Privacy Policy Auditor — Compliance Dashboard</title>
     <meta name="description" content="Automated privacy policy verification and compliance auditing dashboard">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=2.1">
 </head>
 <body>
     <header>
         <div class="header-content">
             <div class="logo">
-                <h1>Privacy Policy RAG</h1>
+                <h1>Privacy Policy Auditor</h1>
             </div>
             <div class="header-right">
-                <div class="status-indicator" id="ollamaStatus">
-                    <span class="status-dot"></span>
-                    <span class="status-text">Connecting...</span>
+                <div class="status-indicator">
+                    <span class="status-dot" id="ollamaStatus"></span>
+                    <span class="status-text">Core Scan Engine</span>
                 </div>
-                <div class="app-count" id="appCount">0 apps</div>
+                <div class="status-indicator">
+                    <span id="appCount">0</span> Apps Indexed
+                </div>
             </div>
         </div>
     </header>
 
     <main>
-        <!-- Upload Section -->
-        <section class="upload-section">
-            <div class="upload-card glass-card">
-                <h2>Upload Findings</h2>
-                <p class="upload-desc">Drop a <code>.jsonl</code> file containing structured findings, or paste a single JSON finding below.</p>
+        <!-- Data Intake -->
+        <section>
+            <div class="panel">
+                <h2>Policy Audit Intake</h2>
+                <div class="upload-desc">Upload privacy audit datasets (<code>.jsonl</code>) or enter a manual finding for verification.</div>
 
                 <div class="dropzone" id="dropzone">
-                    <div class="dropzone-content">
-                        <div class="dropzone-icon">📄</div>
-                        <p>Drag & drop your <strong>fake_data.jsonl</strong> here</p>
-                        <span class="dropzone-hint">or click to browse</span>
-                    </div>
-                    <input type="file" id="fileInput" accept=".jsonl,.json,.txt" hidden>
+                    <p>Transmit Audit File for Processing</p>
+                    <span class="upload-desc">Local encrypted buffer only</span>
+                    <input type="file" id="fileInput" hidden>
                 </div>
 
-                <div class="divider"><span>or paste a single finding</span></div>
+                <div class="divider"><span>OR MANUAL ENTRY</span></div>
 
-                <div class="single-input">
-                    <textarea id="singleInput" rows="3" placeholder='{"finding_id": "F-001", "app_name": "PayTM", "data_type": "location", "action": "data collection"}'></textarea>
-                    <button id="singleBtn" class="btn btn-primary">Verify Finding</button>
+                <div style="display: flex; gap: 16px; align-items: flex-start;">
+                    <div style="flex: 1;">
+                        <textarea id="singleInput" class="textarea-minimal" rows="3" placeholder='{"finding_id": "F-001", "app_name": "PayTM", "collected_phone": "+91-..."}'></textarea>
+                    </div>
+                    <button id="singleBtn" class="btn btn-primary" style="height: 52px;">Verify Finding</button>
                 </div>
             </div>
         </section>
 
-        <!-- Progress Bar -->
-        <section class="progress-section hidden" id="progressSection">
-            <div class="glass-card">
+        <!-- Progress -->
+        <section class="hidden" id="progressSection">
+            <div class="panel">
                 <div class="progress-header">
-                    <h3 id="progressTitle">Processing findings…</h3>
-                    <span class="progress-count" id="progressCount">0 / 0</span>
+                    <span id="progressTitle">Auditing session active...</span>
+                    <span id="progressCount">0 / 0</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill"></div>
@@ -63,24 +64,14 @@
             </div>
         </section>
 
-        <!-- Results Dashboard -->
-        <section class="results-section hidden" id="resultsSection">
-            <div class="results-header">
-                <h2>Verification Results</h2>
-                <div class="results-actions">
-                    <div class="results-stats" id="resultsStats"></div>
-                    <button id="exportBtn" class="btn btn-secondary">⬇ Export JSON</button>
-                </div>
-            </div>
-
-            <!-- Identity Leak Tracker -->
-            <div class="tracker-card glass-card" style="border-left: 4px solid var(--amber); background: rgba(30,30,30,0.6);">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                    <h3 style="margin: 0; padding: 0;">Cross-App Exposure Tracker</h3>
-                </div>
-                <p class="upload-desc" style="margin-bottom: 15px;">Target a specific app and identity field to audit unauthorized collection patterns.</p>
-                <div class="tracker-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <select id="appSelect" style="width: 100%; border-radius: 4px; padding: 10px;">
+        <!-- Audit Findings & Tracer -->
+        <section id="resultsSection">
+            <div class="panel tracker-panel" style="margin-bottom: 32px;">
+                <h2>Identity Exposure Tracker</h2>
+                <div class="upload-desc">Track cross-app PII exposure by searching for specific identifiers across the ecosystem.</div>
+                
+                <div class="tracker-inputs">
+                    <select id="appSelect">
                         <option value="">-- Choose App --</option>
                         <option value="paytm">PayTM</option>
                         <option value="mobikwik">Mobikwik</option>
@@ -89,6 +80,7 @@
                         <option value="mcd_app">MCD App</option>
                         <option value="mseva">mSeva</option>
                         <option value="bses_rajdhani">BSES Rajdhani</option>
+                        <option value="mahadiscom">MahaDiscom</option>
                         <option value="mpassport_seva">mPassport Seva</option>
                         <option value="aarogya_setu">Aarogya Setu</option>
                         <option value="digilocker">Digilocker</option>
@@ -97,20 +89,32 @@
                         <option value="coindcx">CoinDCX</option>
                         <option value="binance">Binance</option>
                     </select>
-                    <select id="idTypeSelect" style="width: 100%; border-radius: 4px; padding: 10px;">
+                    <select id="idTypeSelect">
                         <option value="collected_name">Full Name</option>
                         <option value="collected_phone">Phone Number</option>
                         <option value="collected_email">Email Address</option>
                         <option value="collected_pan">PAN Card</option>
                         <option value="collected_aadhaar">Aadhaar Number</option>
                         <option value="collected_bank_account">Bank Account</option>
-                        <option value="collected_login_id">Login ID / Wallet ID</option>
+                        <option value="collected_login_id">User / Wallet ID</option>
                     </select>
-                    <input type="text" id="idValueInput" placeholder="Enter identifier value..." style="grid-column: span 2;">
-                    <button id="traceBtn" class="btn btn-primary" style="grid-column: span 1;">Trace Exposures</button>
-                    <button id="resetTraceBtn" class="btn btn-secondary" style="grid-column: span 1;">Clear Array</button>
+                    <input type="text" id="idValueInput" placeholder="Enter identifier value...">
                 </div>
-                <div id="trackerSummary" class="error-msg hidden" style="margin-top: 20px;"></div>
+
+                <div style="margin-top: 24px; display: flex; gap: 16px;">
+                    <button id="traceBtn" class="btn btn-primary">Trace Identity Linkages</button>
+                    <button id="resetTraceBtn" class="btn btn-secondary">Clear Session</button>
+                </div>
+
+                <div id="trackerSummary" class="tracker-summary hidden"></div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; padding: 0 4px;">
+                <h2 style="margin: 0;">Forensic Dossiers</h2>
+                <div style="display: flex; gap: 20px; align-items: center;">
+                    <div id="resultsStats" style="display: flex; gap: 16px;"></div>
+                    <button id="exportBtn" class="btn btn-secondary" style="font-size: 11px;">EXPORT AUDIT DATA</button>
+                </div>
             </div>
 
             <div class="results-grid" id="resultsGrid"></div>
@@ -118,7 +122,7 @@
     </main>
 
     <footer>
-        <p>Privacy Policy RAG v2.0 — Enterprise Compliance Platform</p>
+        <p>© 2026 Privacy Policy Auditor Platform | Forensic Compliance Division</p>
     </footer>
 
     <script src="/static/app.js"></script>

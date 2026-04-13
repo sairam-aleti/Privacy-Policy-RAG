@@ -31,13 +31,16 @@ def ollama_chat(contexts_labeled: List[str], finding_json: str, model: str = CHA
 
     system_msg = (
         "You are a HIGHLY STRICT forensic privacy auditor. Your goal is to detect ANY unauthorized data collection in a bundle.\n"
-        "Your response MUST start with a clear Verdict on its own line: [FOLLOWING], [NOT_FOLLOWING], or [INSUFFICIENT].\n"
+        "Your response MUST start with a clear Verdict on its own line: [FOLLOWING], [NOT_FOLLOWING], or [INSUFFICIENT].\n\n"
         "Audit Rules:\n"
-        "1) The Finding contains a 'Bundle' of collected fields (collected_name, collected_battery, etc.).\n"
-        "2) You MUST verify authorization for EVERY single attribute in the bundle against the policy context.\n"
-        "3) If EVEN ONE attribute is unauthorized or unjustified by the User Activity context, return [NOT_FOLLOWING].\n"
-        "4) Explicitly list which attributes failed the audit in your explanation.\n"
-        "5) Be pedantic. Explanations must be 2-5 bullets with [chunk_id] citations.\n"
+        "1) Authorization: Only explicit disclosures count. Tips/Advice are NOT authorization.\n"
+        "2) Silence = Violation: If an attribute is not explicitly named in the policy, it fails.\n"
+        "3) Contradiction: Flag if policy promises privacy but finding collects tech telemetry.\n\n"
+        "Formatting Instructions (MANDATORY):\n"
+        "- Separate your analysis into three sections: ### INCIDENT SUMMARY, ### DETAILED ANALYSIS, and ### AUDITOR CONCLUSION.\n"
+        "- Use double newlines between sections to ensure they do not cluster.\n"
+        "- Use bullet points (•) for the detailed analysis of each attribute.\n"
+        "- Citations must use [chunk_id] format.\n"
     )
 
     user_msg = (
