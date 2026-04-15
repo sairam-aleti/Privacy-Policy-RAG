@@ -278,11 +278,36 @@ document.addEventListener("DOMContentLoaded", () => {
         const insufficient = counts.INSUFFICIENT;
 
         resultsStats.innerHTML = `
-            <span class="stat-pill stat-pill-success">✓ ${following} Following Privacy Policy</span>
-            <span class="stat-pill stat-pill-danger">✗ ${notFollowing} Not Following</span>
-            <span class="stat-pill stat-pill-caution">⚠ ${insufficient} Insufficient Information</span>
+            <span class="stat-pill stat-pill-success" style="cursor: pointer;" onclick="window.filterAudits('SUCCESS')" title="Click to filter">✓ ${following} Following Privacy Policy</span>
+            <span class="stat-pill stat-pill-danger" style="cursor: pointer;" onclick="window.filterAudits('DANGER')" title="Click to filter">✗ ${notFollowing} Not Following</span>
+            <span class="stat-pill stat-pill-caution" style="cursor: pointer;" onclick="window.filterAudits('CAUTION')" title="Click to filter">⚠ ${insufficient} Insufficient Information</span>
+            <span class="stat-pill" style="cursor: pointer; background: var(--bg-neutral); color: var(--text-primary);" onclick="window.filterAudits('ALL')" title="Clear filters">⟲ View All</span>
         `;
     }
+
+    // ── Interactive Filtering Engine ──
+    window.filterAudits = function(statusType) {
+        resultsGrid.innerHTML = "";
+        let count = 0;
+        allResults.forEach((res, idx) => {
+            let isMatch = false;
+            const s = res.status || "ERROR";
+            
+            if (statusType === 'ALL') isMatch = true;
+            else if (statusType === 'SUCCESS' && (s === "VERIFIED" || s === "PARTIALLY_VERIFIED")) isMatch = true;
+            else if (statusType === 'DANGER' && (s === "REJECTED" || s === "NOT_FOUND" || s === "ERROR")) isMatch = true;
+            else if (statusType === 'CAUTION' && s === "INSUFFICIENT") isMatch = true;
+            
+            if (isMatch) {
+                renderCard(res, idx);
+                count++;
+            }
+        });
+        
+        if (count === 0 && statusType !== 'ALL') {
+            resultsGrid.innerHTML = `<div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text-muted); background: var(--bg-panel); border: 1px solid var(--border-color);">No dossiers found matching this filter.</div>`;
+        }
+    };
 
     // ── Identity Tracker ──
     const traceBtn = document.getElementById("traceBtn");
@@ -446,13 +471,19 @@ document.addEventListener("DOMContentLoaded", () => {
     function formatAnswer(text) {
         if (!text) return "";
         
-        // Convert markdown-style sections and list to structured HTML
-        return escapeHtml(text)
+        // Remove the VERDICT line to avoid duplicating the status badge (handles missing brackets or underscores)
+        let cleanText = text.replace(/VERDICT:\s*\[?(FOLLOWING|NOT_FOLLOWING|NOT\sFOLLOWING|INSUFFICIENT)\]?/ig, "").trim();
+        
+        // Strip markdown bolding asterisks explicitly to ensure professional UI formatting
+        cleanText = cleanText.replace(/\*\*/g, "");
+        
+        // Ensure bullets are forced to a new line if the LLM clustered them
+        cleanText = cleanText.replace(/•/g, "\n•");
+
+        return escapeHtml(cleanText)
             .replace(/### (.*)/g, '<div style="margin-top: 20px; font-weight: 700; color: var(--text-primary); font-size: 11px; text-transform: uppercase;">$1</div>')
-            .replace(/^\* /gm, "• ")
-            .replace(/^- /gm, "• ")
-            .replace(/• (.*)/g, '<div style="padding-left: 12px; margin-bottom: 4px;">• $1</div>')
-            .replace(/\[([^\]]+)\]/g, '<strong style="color: var(--accent);">[$1]</strong>')
+            .replace(/• (.*)/g, '<div style="padding-left: 12px; margin-bottom: 6px; display: flex;"><span style="margin-right: 8px; color: var(--text-muted);">•</span><span>$1</span></div>')
+            .replace(/\[([^\]]+)\]/g, '<strong style="color: var(--text-primary);">[$1]</strong>')
             .replace(/\n\n/g, '<div style="height: 12px;"></div>')
             .replace(/\n/g, "<br>");
     }

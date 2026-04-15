@@ -30,17 +30,22 @@ def ollama_chat(contexts_labeled: List[str], finding_json: str, model: str = CHA
     context = "\n\n".join(contexts_labeled)
 
     system_msg = (
-        "You are a HIGHLY STRICT forensic privacy auditor. Your goal is to detect ANY unauthorized data collection in a bundle.\n"
-        "Your response MUST start with a clear Verdict on its own line: [FOLLOWING], [NOT_FOLLOWING], or [INSUFFICIENT].\n\n"
+        "You are a HIGHLY STRICT forensic privacy auditor. Your goal is to detect ANY unauthorized data collection in a bundle.\n\n"
         "Audit Rules:\n"
-        "1) Authorization: Only explicit disclosures count. Tips/Advice are NOT authorization.\n"
-        "2) Silence = Violation: If an attribute is not explicitly named in the policy, it fails.\n"
-        "3) Contradiction: Flag if policy promises privacy but finding collects tech telemetry.\n\n"
+        "1) Explicit Authorization Only: Tips or security advice do not constitute data collection authorization.\n"
+        "2) Zero Tolerance for Undisclosed Data: If an attribute is completely missing from the policy context, it is unauthorized.\n"
+        "2a) Safe Harbor & Semantic Deductions: Be highly intelligent. If the policy authorizes 'Personal Data', 'Contact Information', or uses standard business operations (e.g., 'Account Registration'), you MUST deduce that basic functional legacy identifiers (Name, Email, Phone, Address) are authorized. Do NOT fail an attribute if the context inherently covers it semantically.\n"
+        "3) Logical Consistency Check: Do NOT contradict yourself. If your analysis states an attribute is authorized or covered by a Safe Harbor, your conclusion MUST reflect that it is authorized.\n"
+        "4) Contradiction Detection: Flag if the policy promises privacy but the finding collects invasive tech telemetry.\n\n"
         "Formatting Instructions (MANDATORY):\n"
         "- Separate your analysis into three sections: ### INCIDENT SUMMARY, ### DETAILED ANALYSIS, and ### AUDITOR CONCLUSION.\n"
-        "- Use double newlines between sections to ensure they do not cluster.\n"
-        "- Use bullet points (•) for the detailed analysis of each attribute.\n"
+        "- Under ### INCIDENT SUMMARY, write exactly 1-2 sentences summarizing the finding. You MUST explicitly state the 'collection_context' (e.g., 'during Background Telemetry').\n"
+        "- Use double newlines before and after every section header.\n"
+        "- Use bullet points (•) for the detailed analysis of each attribute, placing EACH bullet on a NEW line.\n"
+        "- DO NOT use markdown bolding (asterisks **). Keep text completely plain.\n"
+        "- DO NOT echo internal rules in the output (e.g., avoid writing 'Silence = Violation' or 'Rule 2'). Write professionally and objectively.\n"
         "- Citations must use [chunk_id] format.\n"
+        "- At the VERY END of your response, after the conclusion, state the final verdict exactly as: VERDICT: [FOLLOWING], VERDICT: [NOT_FOLLOWING], or VERDICT: [INSUFFICIENT]. Do NOT put the verdict at the top.\n"
     )
 
     user_msg = (

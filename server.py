@@ -145,19 +145,8 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
 
 
 
-    # Path 2 has been removed to allow the LLM to semantically verify FAISS chunks (e.g. "whereabouts" = "location")
-    # Path 3 (mention query): Deterministic match
-    if is_mention_query(question):
-        result["status"] = "VERIFIED"
-        explicit_cids = [(cid, ctext) for cid, ctext in evidence_items if chunk_contains_any(ctext, matchers)]
-        matched = []
-        for cid, ctext in explicit_cids[:5]:  # type: ignore
-            hits = extract_matching_sentences(ctext, matchers) if isinstance(ctext, str) else []
-            for h in hits[:3]:  # type: ignore
-                matched.append({"sentence": h, "citation": cid})
-        result["evidence"] = matched
-        result["answer"] = "Explicitly mentioned in the privacy policy (deterministic match)."
-        return result
+    # All findings must be processed sequentially by the Strict Auditor LLM. 
+    # Bypasses such as deterministic BM25 matches have been removed to ensure rigorous bundle-aware logic and proper dossier formatting.
 
     # Path 4: Direct LLM Generation (Skipping per-chunk LLM checks for speed)
     # Since BM25 + FAISS + Explicit Matching provide highly accurate top candidates,
@@ -185,17 +174,26 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
 
     ok, report = validate_llm_answer(answer, allowed_ids)
 
-    result["evidence"] = [
-        {"chunk_id": cid, "text": ctext[:300]}  # type: ignore
-        for cid, ctext in final_evidence
-    ]
+    # Filter evidence for UI display to only those explicitly cited by the AI
+    cited_ids = set(report.get("all_bracket_ids", []))
+    visual_evidence = []
+    for cid, ctext in final_evidence:
+        if cid in cited_ids:
+            visual_evidence.append({"chunk_id": cid, "text": ctext[:500]}) # type: ignore
+            
+    # If no valid citations were made, just show the top chunk used as fallback
+    if not visual_evidence and final_evidence:
+        cid, ctext = final_evidence[0]
+        visual_evidence.append({"chunk_id": cid, "text": str(ctext)[:500]})
+
+    result["evidence"] = visual_evidence
 
     answer_upper = answer.upper()
-    if "[NOT_FOLLOWING]" in answer_upper:
+    if "NOT_FOLLOWING" in answer_upper or "NOT FOLLOWING" in answer_upper:
         result["status"] = "REJECTED"
-    elif "[INSUFFICIENT]" in answer_upper:
+    elif "INSUFFICIENT" in answer_upper:
         result["status"] = "INSUFFICIENT"
-    elif "[FOLLOWING]" in answer_upper or ok:
+    elif "FOLLOWING" in answer_upper:
         result["status"] = "VERIFIED"
     else:
         result["status"] = "INSUFFICIENT"
