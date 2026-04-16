@@ -174,17 +174,10 @@ def process_finding(finding: Dict[str, Any]) -> Dict[str, Any]:
 
     ok, report = validate_llm_answer(answer, allowed_ids)
 
-    # Filter evidence for UI display to only those explicitly cited by the AI
-    cited_ids = set(report.get("all_bracket_ids", []))
+    # Return the top 4 chunks provided to the AI for full UX transparency
     visual_evidence = []
-    for cid, ctext in final_evidence:
-        if cid in cited_ids:
-            visual_evidence.append({"chunk_id": cid, "text": ctext[:500]}) # type: ignore
-            
-    # If no valid citations were made, just show the top chunk used as fallback
-    if not visual_evidence and final_evidence:
-        cid, ctext = final_evidence[0]
-        visual_evidence.append({"chunk_id": cid, "text": str(ctext)[:500]})
+    for cid, ctext in final_evidence[:4]:
+        visual_evidence.append({"chunk_id": cid, "text": str(ctext)[:800] + "..."})
 
     result["evidence"] = visual_evidence
 

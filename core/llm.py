@@ -34,7 +34,10 @@ def ollama_chat(contexts_labeled: List[str], finding_json: str, model: str = CHA
         "Audit Rules:\n"
         "1) Explicit Authorization Only: Tips or security advice do not constitute data collection authorization.\n"
         "2) Zero Tolerance for Undisclosed Data: If an attribute is completely missing from the policy context, it is unauthorized.\n"
-        "2a) Safe Harbor & Semantic Deductions: Be highly intelligent. If the policy authorizes 'Personal Data', 'Contact Information', or uses standard business operations (e.g., 'Account Registration'), you MUST deduce that basic functional legacy identifiers (Name, Email, Phone, Address) are authorized. Do NOT fail an attribute if the context inherently covers it semantically.\n"
+        "2a) Strict Semantic Definitions and Data Minimization: Do not hallucinate definitions. You must rely EXACTLY on these bounds:\n"
+        "  - Broad umbrella terms ('Personal Data', 'Contact Information') ONLY authorize baseline functional PII (Name, Email, Phone, Address).\n"
+        "  - Third-Party Sharing: If the finding indicates data is sent to a 'Third-party' destination, the policy MUST explicitly authorize sharing or transferring that data to third parties. If the policy only authorizes *collection* for internal use but fails to mention third-party sharing, you MUST flag it as a severe violation.\n"
+        "  - Hyper-Sensitive PII (Aadhaar, PAN, Bank Account) and Tech Telemetry (Device ID, Battery, Passwords, SMS, Location) are NEVER inherently covered by standard umbrellas. They MUST be explicitly authorized verbatim, UNLESS the context is heavy verification (e.g., 'KYC Compliance').\n"
         "3) Logical Consistency Check: Do NOT contradict yourself. If your analysis states an attribute is authorized or covered by a Safe Harbor, your conclusion MUST reflect that it is authorized.\n"
         "4) Contradiction Detection: Flag if the policy promises privacy but the finding collects invasive tech telemetry.\n\n"
         "Formatting Instructions (MANDATORY):\n"
@@ -45,7 +48,7 @@ def ollama_chat(contexts_labeled: List[str], finding_json: str, model: str = CHA
         "- DO NOT use markdown bolding (asterisks **). Keep text completely plain.\n"
         "- DO NOT echo internal rules in the output (e.g., avoid writing 'Silence = Violation' or 'Rule 2'). Write professionally and objectively.\n"
         "- Citations must use [chunk_id] format.\n"
-        "- At the VERY END of your response, after the conclusion, state the final verdict exactly as: VERDICT: [FOLLOWING], VERDICT: [NOT_FOLLOWING], or VERDICT: [INSUFFICIENT]. Do NOT put the verdict at the top.\n"
+        "- ***CRITICAL VERDICT REQUIREMENT***: You MUST end your entire response by declaring the final verdict on a new line exactly like this: 'VERDICT: [FOLLOWING]' (if authorized) or 'VERDICT: [NOT_FOLLOWING]' (if unauthorized). The literal word 'FOLLOWING' must be present if it is authorized. Failure to include this exact text will break the system.\n"
     )
 
     user_msg = (

@@ -8,16 +8,16 @@ APP_MAPPINGS = {
     'mahadiscom': ['Address', 'Contacts List', 'ID Card Photo', 'Phone Number', 'Location', 'Transaction History'], 
     'mseva': ['Phone Number', 'Name', 'Transaction History', 'Email Address', 'Browser History', 'Microphone Audio', 'SMS Content'], 
     'bses_rajdhani': ['ID Card Photo', 'Health Records', 'Device ID', 'Address'], 
-    'binance': ['Contacts List', 'Social Security Num', 'Transaction History'], 
-    'coinswitch': ['Phone Number', 'Name', 'Transaction History', 'Social Security Num', 'SMS Content'], 
+    'binance': ['Contacts List', 'Aadhaar Number', 'Transaction History'], 
+    'coinswitch': ['Phone Number', 'Name', 'Transaction History', 'Aadhaar Number', 'SMS Content'], 
     'google_pay': ['Private Keys', 'Phone Number', 'ID Card Photo', 'Call Logs', 'Location', 'Email Address', 'GPS History', 'SMS Content'], 
     'mcd_app': ['KYC Documents', 'SMS Content', 'Phone Number'], 
     'aarogya_setu': ['Device ID', 'Phone Number', 'Contacts List', 'ID Card Photo', 'GPS History'], 
     'freecharge': ['Name', 'KYC Documents', 'Location', 'GPS History', 'Microphone Audio', 'SMS Content'], 
-    'wazirx': ['Payment Details', 'Phone Number', 'Call Logs', 'Social Security Num', 'Private Keys', 'Microphone Audio'], 
+    'wazirx': ['Payment Details', 'Phone Number', 'Call Logs', 'Aadhaar Number', 'Private Keys', 'Microphone Audio'], 
     'coindcx': ['Address', 'Contacts List', 'Location', 'Transaction History', 'GPS History'], 
     'digilocker': ['Contacts List', 'Private Keys', 'Phone Number'], 
-    'mobikwik': ['Payment Details', 'Phone Number', 'Contacts List', 'Name', 'Address', 'Transaction History', 'Social Security Num', 'Private Keys'], 
+    'mobikwik': ['Payment Details', 'Phone Number', 'Contacts List', 'Name', 'Address', 'Transaction History', 'Aadhaar Number', 'Private Keys'], 
     'paytm': ['Name', 'Mobile Number', 'Permanent Address', 'Email Address']
 }
 
@@ -42,7 +42,7 @@ MOCK_VALUES = {
     "call_logs": "com.android.providers.contacts/call_log",
     "sms_content": "OTP read [Bank HDFC]",
     "microphone_audio": "mic_recording_001.acc",
-    "social_security_num": "111-222-3333",
+    "aadhaar_number": "1234-5678-9012",
     "health_records": "med_diagnosis_v1",
     "private_keys": "0xABCDEF1234567890",
     # Universal tracking values
